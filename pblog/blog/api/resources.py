@@ -25,6 +25,7 @@ def build_edit_post_parser():
     parser.add_argument(
         'post',
         type=FileStorage,
+        required=True,
         location='files')
 
     return parser

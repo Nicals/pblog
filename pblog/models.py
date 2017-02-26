@@ -8,6 +8,9 @@ class Category(db.Model):
     name = db.Column(db.String(50), unique=True)
     slug = db.Column(db.String(50))
 
+    def __str__(self):
+        return self.name
+
     def __repr__(self):
         return '<{} {}:{}>'.format(self.__name__, self.id, self.name)
 

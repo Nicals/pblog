@@ -1,0 +1,19 @@
+{% extends "index.html" %}
+
+
+{% block page_content %}
+{% if posts %}
+  {% for post in posts %}
+  <div>
+    <h2><a href="{{  url_for("blog.show_post", slug=post.slug) }}">{{ post.title }}</a></h2>
+    <p>
+      {{ post.summary }}
+    </p>
+  </div>
+  {% endfor %}
+{% else %}
+<p>
+  This blog has no post in it.
+</p>
+{% endif %}
+{% endblock %}

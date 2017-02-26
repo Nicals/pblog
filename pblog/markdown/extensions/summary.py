@@ -1,8 +1,4 @@
-"""
-Summary markdown extension
-==========================
-
-This extensions adds a summary support to markdown.
+"""This extensions adds a summary support to markdown.
 
 A summary is a markdown paragraph that will be extracted from the markup text
 and stored in a summary attribute of the markdown object.

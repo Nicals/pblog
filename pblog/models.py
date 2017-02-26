@@ -19,6 +19,8 @@ class Post(db.Model):
     title = db.Column(db.String(255))
     slug = db.Column(db.String(255))
     summary = db.Column(db.Text())
+    md_content = db.Column(db.Text())
+    html_content = db.Column(db.Text())
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
     category = db.relationship(
         'Category', backref=db.backref('posts', lazy='dynamic'))

@@ -2,11 +2,13 @@
 """
 
 from werkzeug.serving import run_simple
+from werkzeug.wsgi import DispatcherMiddleware
 
+from pblog.blog import api
 from pblog.blog import frontend
 
 
-application = frontend.create_app()
+application = DispatcherMiddleware(frontend.create_app(), {'/api': api.create_app()})
 
 
 if __name__ == '__main__':

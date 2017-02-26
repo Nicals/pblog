@@ -10,6 +10,7 @@ from pblog.models import Post
 from pblog.posts import create_post
 from pblog.posts import update_post
 from pblog.posts import PostError
+from pblog.schemas import PostSchema
 
 
 __all__ = ['PostResource', 'PostListResource']
@@ -35,16 +36,14 @@ class PostListResource(Resource):
         """Creates a new post
 
         The request must have the following parameters:
-            + encoding: optional encoding for the markdown file. Defaults to
-              utf-8
+            + encoding: optional encoding for the markdown file. Defaults to utf-8
+            + markdown: a file containing the markdown paper
 
         On successful post creation, the response will return an HTTP 201
-        response with the following content:
-            + id: id of the created post
-            + url: full url of the post
+        response with the created post.
 
         Any error will be returned with the HTTP 400 response. Errors will be
-        stored in an "errors" array.
+        stored in an "errors" dictionary.
         """
         parser = build_edit_post_parser()
         args = parser.parse_args()
@@ -57,13 +56,21 @@ class PostListResource(Resource):
         db.session.add(post)
         db.session.commit()
 
-        return dict(id=post.id)
+        post_schema = PostSchema()
+        return post_schema.dump(post).data, 201
 
 
 @api.resource('/posts/<int:post_id>')
 class PostResource(Resource):
     def post(self, post_id):
-        """update an existing post
+        """Update an existing post
+
+        On success, return a 200 OK response.
+
+        Any error will be returned with the HTTP 400 response. Errors will be
+        stored in an "errors" dictionary.
+
+        A 404 will be returned if the updated post does not exist.
         """
         try:
             post = Post.query.filter_by(id=post_id).one()
@@ -81,4 +88,5 @@ class PostResource(Resource):
         db.session.add(post)
         db.session.commit()
 
-        return dict(id=post.id)
+        post_schema = PostSchema()
+        return post_schema.dump(post).data

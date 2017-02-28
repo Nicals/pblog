@@ -11,9 +11,9 @@ from werkzeug.datastructures import FileStorage
 from pblog.core import api
 from pblog.core import db
 from pblog.models import Post
-from pblog.posts import create_post
-from pblog.posts import update_post
-from pblog.posts import PostError
+from pblog.storage import create_post
+from pblog.storage import update_post
+from pblog.storage import PostError
 from pblog import security
 from pblog.schemas import PostSchema
 

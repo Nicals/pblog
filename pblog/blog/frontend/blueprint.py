@@ -1,6 +1,8 @@
 from flask import abort
 from flask import Blueprint
+from flask import redirect
 from flask import render_template
+from flask import url_for
 from sqlalchemy.orm.exc import NoResultFound
 
 from pblog.models import Post
@@ -17,12 +19,16 @@ def home_page():
         posts=posts)
 
 
-@blueprint.route('/post/<slug>')
-def show_post(slug):
+@blueprint.route('/post/<post_id>/<slug>')
+def show_post(post_id, slug):
     try:
-        post = Post.query.filter_by(slug=slug).one()
+        post = Post.query.filter_by(id=post_id).one()
     except NoResultFound:
         abort(404)
+
+    # if the slug don't match, permanently redirect to correct url
+    if post.slug != slug:
+        return redirect(url_for('blog.show_post', post_id=post.id, slug=post.slug), code=301)
 
     return render_template('post.html', post=post)
 

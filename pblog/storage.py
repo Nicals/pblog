@@ -68,15 +68,6 @@ def parse_markdown(md_file, encoding, post=None):
     if not validator.validate(md.meta):
         raise PostError("Meta data did not validate", errors=validator.errors)
 
-    # make sure slug does not already exist
-    slug_query = Post.query.filter(Post.slug == md.meta['slug'])
-    if post is not None:
-        slug_query = slug_query.filter(Post.id != post.id)
-
-    if slug_query.first() is not None:
-        raise PostError("Slug {} already exist".format(md.meta['slug']),
-                        errors={'slug': ["This slug already exist"]})
-
     return PostDefinition(
         title=md.meta['title'],
         slug=md.meta['slug'],

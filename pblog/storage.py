@@ -9,6 +9,7 @@ import markdown
 from sqlalchemy.orm.exc import NoResultFound
 import yaml
 
+from pblog.core import db
 from pblog.models import Category, Post
 
 
@@ -102,13 +103,18 @@ def create_post(md_file, encoding='utf-8'):
     except NoResultFound:
         category = Category(name=post_definition.category)
 
-    return Post(
+    post = Post(
         title=post_definition.title,
         slug=post_definition.slug,
         summary=post_definition.summary,
         category=category,
         md_content=post_definition.markdown,
         html_content=post_definition.html)
+
+    db.session.add(post)
+    db.session.commit()
+
+    return post
 
 
 def update_post(post, md_file, encoding='utf-8'):
@@ -136,6 +142,9 @@ def update_post(post, md_file, encoding='utf-8'):
     post.summary = post_definition.summary
     post.md_content = post_definition.markdown
     post.html_content = post_definition.html
+
+    db.session.add(post)
+    db.session.commit()
 
 
 def get_all_posts():

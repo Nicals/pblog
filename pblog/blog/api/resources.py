@@ -9,7 +9,6 @@ from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.datastructures import FileStorage
 
 from pblog.core import api
-from pblog.core import db
 from pblog.models import Post
 from pblog.storage import create_post
 from pblog.storage import update_post
@@ -125,9 +124,6 @@ class PostListResource(Resource):
         except PostError as e:
             return dict(errors=e.errors), 400
 
-        db.session.add(post)
-        db.session.commit()
-
         post_schema = PostSchema()
         return post_schema.dump(post).data, 201
 
@@ -157,9 +153,6 @@ class PostResource(Resource):
             update_post(post, args.post, args.encoding)
         except PostError as e:
             return dict(errors=e.errors), 400
-
-        db.session.add(post)
-        db.session.commit()
 
         post_schema = PostSchema()
         return post_schema.dump(post).data

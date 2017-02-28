@@ -29,6 +29,7 @@ file in an **PBLOG_SETTINGS** environment variable.
 | DEBUG | bool | defaults to False |
 | SECRET_KEY | string | default to an insecure value |
 | SQLALCHEMY_DATABASE_URI | string | |
+| PBLOG_CONTRIBUTORS | dict | A dictionnary mapping usernames to hashed passwords. See **commands** to generate passwords. |
 
 
 Posts

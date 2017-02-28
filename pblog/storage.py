@@ -13,11 +13,19 @@ from pblog.core import db
 from pblog.models import Category, Post
 
 
-__all__ = ['PostError', 'create_post']
+__all__ = [
+    'PostError',
+    'create_post',
+    'update_post',
+    'get_all_posts',
+    'get_post']
 
 
 class PostError(Exception):
     """Raised when building a post is impossible
+
+    Attributes:
+        errors (dict): A dictionary mapping field name to a list of errors.
     """
     def __init__(self, message, errors):
         self.errors = errors

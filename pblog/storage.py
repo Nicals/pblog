@@ -90,6 +90,24 @@ def parse_markdown(md_file, encoding):
         html=html_content)
 
 
+def get_or_create_category(name):
+    """Try to retrieve a category by its name.
+    If it does not exist, a new category instance will be returned.
+
+    The new category will not be persisted in database if created.
+
+    Args:
+        name (str): The name of the category to fetch.
+
+    Returns:
+        pblog.models.Category: The new category
+    """
+    try:
+        return Category.query.filter_by(name=name).one()
+    except NoResultFound:
+        return Category(name=name)
+
+
 def create_post(md_file, encoding='utf-8'):
     """Creates a new post from a markdown file and saves it in the database.
 
@@ -105,17 +123,11 @@ def create_post(md_file, encoding='utf-8'):
     """
     post_definition = parse_markdown(md_file, encoding)
 
-    # get or create a category
-    try:
-        category = Category.query.filter_by(name=post_definition.category).one()
-    except NoResultFound:
-        category = Category(name=post_definition.category)
-
     post = Post(
         title=post_definition.title,
         slug=post_definition.slug,
         summary=post_definition.summary,
-        category=category,
+        category=get_or_create_category(post_definition.category),
         md_content=post_definition.markdown,
         html_content=post_definition.html)
 
@@ -138,16 +150,10 @@ def update_post(post, md_file, encoding='utf-8'):
     """
     post_definition = parse_markdown(md_file, encoding, post)
 
-    # get or create a category if needed
-    if post.category.name != post_definition.category:
-        try:
-            post.category = Category.query.filter_by(name=post_definition.category).one()
-        except NoResultFound:
-            post.category = Category(name=post_definition.category)
-
     post.title = post_definition.title
     post.slug = post_definition.slug
     post.summary = post_definition.summary
+    post.category = get_or_create_category(post_definition.category)
     post.md_content = post_definition.markdown
     post.html_content = post_definition.html
 

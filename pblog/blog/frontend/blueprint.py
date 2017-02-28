@@ -12,11 +12,13 @@ blueprint = Blueprint('blog', __name__)
 
 
 @blueprint.route('/')
-def home_page():
+def post_lists():
     posts = storage.get_all_posts()
+    categories = storage.get_all_categories()
     return render_template(
         'posts-list.html',
-        posts=posts)
+        posts=posts,
+        categories=categories)
 
 
 @blueprint.route('/post/<post_id>/<slug>')

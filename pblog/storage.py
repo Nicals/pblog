@@ -183,3 +183,12 @@ def get_post(post_id):
         pblog.models.Post: The fetched post
     """
     return Post.query.filter_by(id=post_id).one()
+
+
+def get_all_categories():
+    """Returns all categories which have at least one associated post
+
+    Returns:
+        list of pblog.models.Category:
+    """
+    return Category.query.join(Post).all()

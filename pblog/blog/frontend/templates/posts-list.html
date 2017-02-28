@@ -2,6 +2,14 @@
 
 
 {% block page_content %}
+{% if categories %}
+<ul>
+  {% for category in categories %}
+  <li>{{ category }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+
 {% if posts %}
   {% for post in posts %}
   <div>

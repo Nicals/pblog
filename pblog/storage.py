@@ -27,15 +27,18 @@ PostDefinition = namedtuple('PostDefinition', (
     'title', 'slug', 'summary', 'date', 'category', 'markdown', 'html'))
 
 
-def parse_markdown(md_file, encoding, post=None):
-    """
-    :param string md_content: markdown content to parse
-    :param pblog.models.Post post: an existing post if the markdown file is
-        parsed for update
+def parse_markdown(md_file, encoding):
+    """Extract and validates all post data from a markdown file.
 
-    :raises PostError: if some data failed to validate
+    Args:
+        md_file (file): The file to parse.
+        encoding (str): The encoding used in the file.
 
-    :return PostDefinition:
+    Returns:
+        PostDefinition: The data extracted from the file
+
+    Raises:
+        PostError: If any data fails to correctly validate
     """
     md = markdown.Markdown(extensions=['pblog.markdown.extensions.summary',
                                        'pblog.markdown.extensions.meta'])
@@ -79,13 +82,17 @@ def parse_markdown(md_file, encoding, post=None):
 
 
 def create_post(md_file, encoding='utf-8'):
-    """
-    :param file md_file:
-    :param string encoding:
+    """Creates a new post from a markdown file and saves it in the database.
 
-    :raises PostError: if some data fails to validate
+    Args:
+        md_file (file): The file to build a new post from
+        encoding (str): The encoding used in the markdown file.
 
-    :return created post:
+    Returns:
+        pblog.models.Post: The created post.
+
+    Raises:
+        PostError: If any of the data fails to validate
     """
     post_definition = parse_markdown(md_file, encoding)
 
@@ -105,12 +112,15 @@ def create_post(md_file, encoding='utf-8'):
 
 
 def update_post(post, md_file, encoding='utf-8'):
-    """
-    :param pblog.models.Post post:
-    :param file md_file:
-    :param string encoding:
+    """Updates a post from a markdown file and saves it in the database.
 
-    :raises PostError: if some data fails to validate
+    Ags:
+        post (pblog.models.Post): The post to update
+        md_file (file): The markdown file to update the post from
+        encoding (str): The encoding used in the file
+
+    Raises:
+        pblog.storage.PostError: If any data fails to validate.
     """
     post_definition = parse_markdown(md_file, encoding, post)
 
@@ -126,3 +136,27 @@ def update_post(post, md_file, encoding='utf-8'):
     post.summary = post_definition.summary
     post.md_content = post_definition.markdown
     post.html_content = post_definition.html
+
+
+def get_all_posts():
+    """Get all stored posts.
+
+    Returns:
+        list of pblog.models.Post:
+    """
+    return Post.query.all()
+
+
+def get_post(post_id):
+    """Get a post by its id.
+
+    Args:
+        post_id: Unique identifier of the post to fetch
+
+    Raises:
+        sqlalchemy.orm.exc.NoResultFound: If no post exists with this id
+
+    Returns:
+        pblog.models.Post: The fetched post
+    """
+    return Post.query.filter_by(id=post_id).one()

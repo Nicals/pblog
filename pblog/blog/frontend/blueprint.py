@@ -5,7 +5,7 @@ from flask import render_template
 from flask import url_for
 from sqlalchemy.orm.exc import NoResultFound
 
-from pblog.models import Post
+from pblog import storage
 
 
 blueprint = Blueprint('blog', __name__)
@@ -13,7 +13,7 @@ blueprint = Blueprint('blog', __name__)
 
 @blueprint.route('/')
 def home_page():
-    posts = Post.query.all()
+    posts = storage.get_all_posts()
     return render_template(
         'posts-list.html',
         posts=posts)
@@ -22,7 +22,7 @@ def home_page():
 @blueprint.route('/post/<post_id>/<slug>')
 def show_post(post_id, slug):
     try:
-        post = Post.query.filter_by(id=post_id).one()
+        post = storage.get_post(post_id)
     except NoResultFound:
         abort(404)
 

@@ -1,3 +1,33 @@
+"""This module contains web API resources used for Pblog management.
+
+Resources called returns JSON response.
+
+If a request is not well formatted, a 400 response will be return and a `message`
+key will contain a string indicating why the request was not accepted.
+Those message are aimed to the client using the API and should be dealt by it.
+
+Example:
+    {
+        "message": "Missing 'post_id' field",
+    }
+
+
+If the request is valid (ie: all required data are correctly sent) but the
+request content did not validate, a 400 is returned and field errors are
+given in an `errors` field of the response.
+This field is a dictionary mapping the field name to a list of string describing
+the errors.
+This case is usually because the user failed to provide correct data to the
+client.
+
+Example:
+    {
+        "errors": {
+            "post_id": {"'foo' is not an integer"],
+        },
+    }
+"""
+
 from functools import wraps
 
 from flask import abort
@@ -10,9 +40,7 @@ from werkzeug.datastructures import FileStorage
 
 from pblog.core import api
 from pblog.models import Post
-from pblog.storage import create_post
-from pblog.storage import update_post
-from pblog.storage import PostError
+from pblog import storage
 from pblog import security
 from pblog.schemas import PostSchema
 
@@ -21,10 +49,18 @@ __all__ = ['PostResource', 'PostListResource']
 
 
 def auth_required(func):
-    """Will abort with:
+    """This decorator is used to ensure that a user is correctly authenticated
+    before he can access a given resource.
 
-    400 if no token is provided
-    401 if the token is invalid.
+    Authentication is checkeb by providing a valid token in X-Pblog-Token
+    header key.
+
+    If no token is provided or the token is not correctly formatted, a 401
+    response will be return with the content:
+            {"message": "invalid_token"}
+
+    If the token has expired, a 401 response will be returne with the content:
+            {"message": "token_expired"}
     """
     @wraps(func)
     def decorator(*args, **kwargs):
@@ -32,21 +68,17 @@ def auth_required(func):
         parser.add_argument(
             'X-Pblog-Token',
             dest='token',
-            required=True,
+            required=False,
             location='headers')
-        args = parser.parse_args()
+        req_args = parser.parse_args()
 
         try:
             security.validate_token(
-                args.token,
-                current_app.config['SECRET_KEY'],
-                max_age=300)
+                req_args.token, current_app.config['SECRET_KEY'], max_age=300)
         except itsdangerous.SignatureExpired:
-            return dict(errors={'auth': ["Signature expired"]}), 401
-        except itsdangerous.BadSignature:
-            return dict(errors={'auth': ["Bad signature"]}), 401
-        except itsdangerous.BadTimeSignature:
-            return dict(errors={'auth': ["Signature does not match"]}), 401
+            return dict(message='token_expired'), 401
+        except itsdangerous.BadData:
+            return dict(message='invalid_token'), 401
 
         return func(*args, **kwargs)
 
@@ -120,8 +152,8 @@ class PostListResource(Resource):
         args = parser.parse_args()
 
         try:
-            post = create_post(args.post, args.encoding)
-        except PostError as e:
+            post = storage.create_post(args.post, args.encoding)
+        except storage.PostError as e:
             return dict(errors=e.errors), 400
 
         post_schema = PostSchema()
@@ -150,8 +182,8 @@ class PostResource(Resource):
         args = parser.parse_args()
 
         try:
-            update_post(post, args.post, args.encoding)
-        except PostError as e:
+            storage.update_post(post, args.post, args.encoding)
+        except storage.PostError as e:
             return dict(errors=e.errors), 400
 
         post_schema = PostSchema()

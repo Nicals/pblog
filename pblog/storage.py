@@ -148,7 +148,7 @@ def update_post(post, md_file, encoding='utf-8'):
     Raises:
         pblog.storage.PostError: If any data fails to validate.
     """
-    post_definition = parse_markdown(md_file, encoding, post)
+    post_definition = parse_markdown(md_file, encoding)
 
     post.title = post_definition.title
     post.slug = post_definition.slug

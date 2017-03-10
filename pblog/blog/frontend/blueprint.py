@@ -8,7 +8,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from pblog import storage
 
 
-blueprint = Blueprint('blog', __name__)
+blueprint = Blueprint('blog', __name__, template_folder='templates')
 
 
 @blueprint.route('/')

@@ -2,7 +2,8 @@ from unittest.mock import patch, Mock
 
 import itsdangerous
 
-from pblog.blog.api import create_app, resources
+from pblog.blog.api import resources
+from pblog.factory import create_app
 
 
 @patch('pblog.blog.api.resources.reqparse.RequestParser')

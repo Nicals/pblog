@@ -33,7 +33,7 @@ class TestAuthRequired:
         assert status_code == 401
         assert response == {'message': 'invalid_token'}
 
-    @patch('pblog.API.resources.security')
+    @patch('pblog.api.resources.security')
     def test_expired_signature(self, security_patch, RequestParser):
         app = create_app()
         security_patch.validate_token.side_effect = itsdangerous.SignatureExpired('expired')

@@ -31,21 +31,23 @@ Example:
 from functools import wraps
 
 from flask import abort
+from flask import Blueprint
 from flask import current_app
+from flask_restful import Api
 from flask_restful import Resource
 from flask_restful import reqparse
 import itsdangerous
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.datastructures import FileStorage
 
-from pblog.core import api
 from pblog.models import Post
 from pblog import storage
 from pblog import security
 from pblog.schemas import PostSchema
 
 
-__all__ = ['PostResource', 'PostListResource']
+blueprint = Blueprint('api', __name__)
+api = Api(blueprint)
 
 
 def auth_required(func):

@@ -2,16 +2,15 @@
 """
 
 from pblog import factory
-from pblog.core import api
 from pblog.core import marshmallow
-from pblog.blog.api.resources import *  # NOQA
+from pblog.blog.api.resources import blueprint
 
 
 def create_app():
     """creates a new api flask application
     """
     app = factory.create_app(__name__, __path__)
-    api.init_app(app)
     marshmallow.init_app(app)
+    app.register_blueprint(blueprint, url_prefix='/api')
 
     return app

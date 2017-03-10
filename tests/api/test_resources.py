@@ -2,13 +2,13 @@ from unittest.mock import patch, Mock
 
 import itsdangerous
 
-from pblog.blog.api import resources
+from pblog.api import resources
 from pblog.factory import create_app
 
 
-@patch('pblog.blog.api.resources.reqparse.RequestParser')
+@patch('pblog.api.resources.reqparse.RequestParser')
 class TestAuthRequired:
-    @patch('pblog.blog.api.resources.security')
+    @patch('pblog.api.resources.security')
     def test_correct_key_allows_resource_access(self, security_patch, RequestParser):
         app = create_app()
         security_patch.validate_token.return_value = True
@@ -33,7 +33,7 @@ class TestAuthRequired:
         assert status_code == 401
         assert response == {'message': 'invalid_token'}
 
-    @patch('pblog.blog.api.resources.security')
+    @patch('pblog.API.resources.security')
     def test_expired_signature(self, security_patch, RequestParser):
         app = create_app()
         security_patch.validate_token.side_effect = itsdangerous.SignatureExpired('expired')

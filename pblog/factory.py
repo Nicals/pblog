@@ -7,8 +7,8 @@ from flask import Flask
 from flask_debugtoolbar import DebugToolbarExtension
 
 from pblog.core import db, marshmallow
-from pblog.blog.api.resources import blueprint as api_blueprint
-from pblog.blog.frontend.blueprint import blueprint as blog_blueprint
+from pblog.api.resources import blueprint as api_blueprint
+from pblog.frontend.blueprint import blueprint as blog_blueprint
 
 ENV_SETTINGS = 'PBLOG_SETTINGS'
 

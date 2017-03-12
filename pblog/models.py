@@ -12,7 +12,7 @@ class Category(db.Model):
         return self.name
 
     def __repr__(self):
-        return '<{} {}:{}>'.format(self.__name__, self.id, self.name)
+        return '<{} {}:{}>'.format(self.__class__.__name__, self.id, self.name)
 
 
 class Post(db.Model):
@@ -29,4 +29,4 @@ class Post(db.Model):
         'Category', backref=db.backref('posts', lazy='dynamic'))
 
     def __repr__(self):
-        return '<{} {}:{}>'.format(self.__name__, self.id, self.name)
+        return '<{} {}:{}>'.format(self.__clas__.__name__, self.id, self.name)

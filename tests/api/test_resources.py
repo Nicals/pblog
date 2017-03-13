@@ -40,10 +40,13 @@ class TestAuthRequired:
         assert response == {'message': 'token_expired'}
 
     def test_no_signature(self, RequestParser, app):
+        parser = Mock(token=None)
+        parser.parse_args.return_value = Mock(token=None)
+        RequestParser.return_value = parser
         view = Mock()
 
         response, status_code = resources.auth_required(view)()
 
         assert view.called is False
         assert status_code == 401
-        assert response == {'message': 'invalid_token'}
+        assert response == {'message': 'authentication_required'}

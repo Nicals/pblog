@@ -74,6 +74,9 @@ def auth_required(func):
             location='headers')
         req_args = parser.parse_args()
 
+        if req_args.token is None:
+            return dict(message='authentication_required'), 401
+
         try:
             security.validate_token(
                 req_args.token, current_app.config['SECRET_KEY'], max_age=300)

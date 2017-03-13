@@ -2,6 +2,7 @@
 """
 
 from sqlalchemy.orm.exc import NoResultFound
+from slugify import slugify
 
 from pblog.core import db
 from pblog.models import Category, Post
@@ -30,7 +31,7 @@ def get_or_create_category(name):
     try:
         return Category.query.filter_by(name=name).one()
     except NoResultFound:
-        return Category(name=name)
+        return Category(name=name, slug=slugify(name))
 
 
 def create_post(md_file, encoding='utf-8'):
@@ -51,6 +52,7 @@ def create_post(md_file, encoding='utf-8'):
     post = Post(
         title=post_definition.title,
         slug=post_definition.slug,
+        published_date=post_definition.date,
         summary=post_definition.summary,
         category=get_or_create_category(post_definition.category),
         md_content=post_definition.markdown,
@@ -77,6 +79,7 @@ def update_post(post, md_file, encoding='utf-8'):
 
     post.title = post_definition.title
     post.slug = post_definition.slug
+    post.published_date = post_definition.date
     post.summary = post_definition.summary
     post.category = get_or_create_category(post_definition.category)
     post.md_content = post_definition.markdown

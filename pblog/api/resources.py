@@ -41,6 +41,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.datastructures import FileStorage
 
 from pblog.models import Post
+from pblog.markdown import PostError
 from pblog import storage
 from pblog import security
 from pblog.schemas import PostSchema
@@ -73,6 +74,9 @@ def auth_required(func):
             required=False,
             location='headers')
         req_args = parser.parse_args()
+
+        if req_args.token is None:
+            return dict(message='authentication_required'), 401
 
         try:
             security.validate_token(
@@ -155,7 +159,7 @@ class PostListResource(Resource):
 
         try:
             post = storage.create_post(args.post, args.encoding)
-        except storage.PostError as e:
+        except PostError as e:
             return dict(errors=e.errors), 400
 
         post_schema = PostSchema()
@@ -185,7 +189,7 @@ class PostResource(Resource):
 
         try:
             storage.update_post(post, args.post, args.encoding)
-        except storage.PostError as e:
+        except PostError as e:
             return dict(errors=e.errors), 400
 
         post_schema = PostSchema()

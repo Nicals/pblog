@@ -1,3 +1,6 @@
+import datetime
+
+from cerberus import Validator
 import requests
 
 
@@ -35,6 +38,30 @@ class Client:
 
         return response.json()
 
+    def normalize_post(self, post):
+        """Normalizes a post response.
+
+        Returns:
+            dict: A normalized dictionary.
+        """
+        validator = Validator({
+            'id': {'type': 'integer'},
+            'title': {'type': 'string'},
+            'slug': {'type': 'string'},
+            'category': {'type': 'dict', 'schema': {
+                'id': {'type': 'integer'},
+                'name': {'type': 'string'},
+            }},
+            'published_date': {
+                'type': 'date',
+                'coerce': lambda s: datetime.datetime.strptime(s, '%Y-%m-%d').date()},
+        })
+
+        if not validator.validate(post):
+            raise Client(validator.errors)
+
+        return validator.normalized(post)
+
     def authenticate(self, username, password):
         """Authenticate on the web api.
 
@@ -68,7 +95,7 @@ class Client:
                 'post': (post_path.name, post_path.open(), 'text/markdown'),
             })
 
-        return self._read_response(response, [201])
+        return self.normalize_post(self._read_response(response, [201]))
 
     def update_post(self, post_id, post_path, encoding):
         """
@@ -89,4 +116,4 @@ class Client:
                 'post': (post_path.name, post_path.open(), 'text/markdown'),
             })
 
-        return self._read_response(response, [200])
+        return self.normalize_post(self._read_response(response, [200]))

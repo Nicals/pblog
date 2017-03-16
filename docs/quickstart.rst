@@ -48,11 +48,11 @@ Several environment can be configured independently.
 
    [pblog:default]
    username = admin
-   root_api = http://blog.example.org/api
+   url = http://blog.example.org/
 
    [pblog:testing]
    username = admin
-   root_api = http://127.0.0.1:8000/api
+   url = http://127.0.0.1:8000/blog/
 
 
 .. code-block:: console

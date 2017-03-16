@@ -8,7 +8,7 @@ from pblog import markdown
 from pblog.client import AuthenticationError, Client
 
 
-Environment = namedtuple('Environment', ('name', 'api_root', 'username'))
+Environment = namedtuple('Environment', ('name', 'url', 'username'))
 
 
 class EnvError(Exception):
@@ -47,7 +47,7 @@ def parse_env(env_file, env=None):
 
     return Environment(
         name=env,
-        api_root=parser[env_section]['root_api'],
+        url=parser[env_section]['url'].rstrip('/'),
         username=parser[env_section]['username'])
 
 
@@ -87,7 +87,7 @@ def publish(ctx, post_path, encoding, password):
     if not post_path.is_file():
         raise click.ClickException('%s is not a file' % post_path)
 
-    client = Client(api_root=env.api_root)
+    client = Client(api_root=env.url + '/api/')
     try:
         client.authenticate(env.username, password)
     except AuthenticationError:
@@ -112,6 +112,10 @@ def publish(ctx, post_path, encoding, password):
         result_post = client.update_post(post.id[env.name], post_path, encoding)
         click.echo('post %s successfully updated' % result_post['id'])
 
+    click.echo('url: {url}/post/{id}/{slug}'.format(
+        url=env.url,
+        id=result_post['id'],
+        slug=result_post['slug']))
     markdown.update_meta(
         post_path.open('r+b'),
         {'id': post.id, 'date': result_post['published_date']},

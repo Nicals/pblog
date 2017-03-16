@@ -46,4 +46,4 @@ def show_post(post_id, slug, is_markdown):
 
 @blueprint.app_errorhandler(404)
 def show_404(err):
-    return render_template('404.html')
+    return render_template('404.html'), err.code

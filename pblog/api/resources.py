@@ -48,7 +48,7 @@ from pblog.schemas import PostSchema
 
 
 blueprint = Blueprint('api', __name__)
-api = Api(blueprint, catch_all_404s=True)
+api = Api(blueprint)
 
 
 def auth_required(func):
@@ -194,3 +194,9 @@ class PostResource(Resource):
 
         post_schema = PostSchema()
         return post_schema.dump(post).data
+
+
+@api.resource('/', '/<path:path>')
+class NotFound(Resource):
+    def dispatch_request(self, *args, **kwargs):
+        return dict(message='not found'), 404

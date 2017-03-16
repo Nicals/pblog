@@ -8,12 +8,12 @@ Some metadata are required to configure some post.
 ======== ======= ==============================================================
 
 id       dict    a dctionary mapping environment names to actual post id in
-                 the web interface.
-title    string  the title of this post
+                 the web interface. Not required for new post.
+title    string  the title of this post. Required.
 slug     string  a slug to use for this post. It is not required to be a unique
-                 value
+                 value. Not required.
 category string  name of the category for this post. If not already existing,
-                 a new category will be created in the web interface.
+                 a new category will be created in the web interface. Required.
 date     date    yyyy-mm-dd. If not set, the current date will be set to
                  the current date.
 
@@ -51,6 +51,8 @@ When a post is published and has no id, a new post will be created on the web
 interface.
 The id part of the local markdown file will be automatically updated to
 reflect the web interface db id.
+
+If the ``slug`` is not set in the metadata, it will be generated from the ``title``.
 
 If the ``date`` metadata is not given, it will be automatically set as the
 current date when publishing the post.

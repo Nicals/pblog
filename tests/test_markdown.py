@@ -1,4 +1,5 @@
 from datetime import date
+from unittest.mock import patch
 from io import BytesIO
 
 import pytest
@@ -6,11 +7,11 @@ import pytest
 from pblog import markdown
 
 
-def test_extracts_post_info():
+def test_extracts_post_info_and_sets_default_values():
     md_file = BytesIO("""---
 
 title: A title
-slug: a-title
+slug: 'a-title'
 category: A category
 date: 2017-05-12
 
@@ -28,6 +29,43 @@ Second paragraph
     assert post.slug == "a-title"
     assert post.category == "A category"
     assert post.date == date(2017, 5, 12)
+
+
+@patch('pblog.markdown.date')
+def test_extracts_default_null_velues(patch_date):
+    patch_date.today.return_value = date(2017, 3, 15)
+    md_file = BytesIO("""---
+
+id: null
+title: A title
+slug: null
+category: A category
+date: null
+
+---""".encode('utf-8'))
+
+    post = markdown.parse_markdown(md_file)
+
+    assert post.id == {}
+    assert post.slug == 'a-title'
+    assert post.date == date(2017, 3, 15)
+
+
+@patch('pblog.markdown.date')
+def test_extracts_missing_values(patch_date):
+    patch_date.today.return_value = date(2017, 3, 15)
+    md_file = BytesIO("""---
+
+title: A title
+category: A category
+
+---""".encode('utf-8'))
+
+    post = markdown.parse_markdown(md_file)
+
+    assert post.id == {}
+    assert post.slug == 'a-title'
+    assert post.date == date(2017, 3, 15)
 
 
 def test_raise_validation_error_if_no_meta_data():

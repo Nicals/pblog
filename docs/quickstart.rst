@@ -17,6 +17,12 @@ environment variable.
                                           + 'admin': 'pbkdf2:...'
 =========================== ========== ================================================================
 
+Create the database
+
+.. code-block:: console
+
+  $ python manage.py upgrade
+
 The web server is started by the ``wsgi.py`` script.
 
 .. code-block:: console
@@ -52,6 +58,8 @@ Several environment can be configured independently.
 .. code-block:: console
 
    $ python -mpblog publish ~/blog/my-post.md
+
+See :doc:`writing-posts` to see how to write posts.
 
 
 The ``env`` option can be used to select the environment to load.

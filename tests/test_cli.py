@@ -12,13 +12,14 @@ def test_reads_env():
 env = default
 
 [pblog:default]
-root_api = http://example.org/api
+url = http://example.org/api
 username = Mr Ham
 """)
 
     env = cli.parse_env(env_file)
 
-    assert env.api_root == 'http://example.org/api'
+    assert env.name == 'default'
+    assert env.url == 'http://example.org/api'
     assert env.username == 'Mr Ham'
 
 
@@ -28,13 +29,14 @@ def test_overrides_env():
 env = default
 
 [pblog:not-default]
-root_api = http://example.org/api
+url = http://example.org/api
 username = Mr Ham
 """)
 
     env = cli.parse_env(env_file, env='not-default')
 
-    assert env.api_root == 'http://example.org/api'
+    assert env.name == 'not-default'
+    assert env.url == 'http://example.org/api'
     assert env.username == 'Mr Ham'
 
 

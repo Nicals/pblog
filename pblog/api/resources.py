@@ -48,7 +48,7 @@ from pblog.schemas import PostSchema
 
 
 blueprint = Blueprint('api', __name__)
-api = Api(blueprint)
+api = Api(blueprint, catch_all_404s=True)
 
 
 def auth_required(func):

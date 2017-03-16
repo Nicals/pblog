@@ -18,6 +18,20 @@ class PostError(Exception):
         super().__init__(message)
 
 
+validator = Validator({
+    'id': {'type': 'dict',
+           'default': {},
+           'nullable': True,
+           'required': False,
+           'keyschema': {'type': 'string'},
+           'valueschema': {'type': 'integer', 'default': None, 'nullable': True}},
+    'title': {'type': 'string', 'required': True},
+    'slug': {'type': 'string', 'required': True, 'regex': '^[A-Za-z0-9_-]+$'},
+    'category': {'type': 'string', 'required': True},
+    'date': {'type': 'date'},
+})
+
+
 PostDefinition = namedtuple('PostDefinition', (
     'id', 'title', 'slug', 'summary', 'date', 'category', 'markdown', 'html'))
 
@@ -67,14 +81,6 @@ def parse_markdown(md_file, encoding='utf-8'):
         raise PostError(
             "meta is not valid yaml",
             errors={'markdown': ["could not parse header"]})
-
-    validator = Validator({
-        'id': {'type': 'integer', 'default': None, 'nullable': True, 'required': False},
-        'title': {'type': 'string', 'required': True},
-        'slug': {'type': 'string', 'required': True, 'regex': '^[A-Za-z0-9_-]+$'},
-        'category': {'type': 'string', 'required': True},
-        'date': {'type': 'date'},
-    })
 
     try:
         if not validator.validate(md.meta):

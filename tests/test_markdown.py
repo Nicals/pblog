@@ -23,7 +23,7 @@ Second paragraph
 
     post = markdown.parse_markdown(md_file)
 
-    assert post.id is None
+    assert post.id == {}
     assert post.title == "A title"
     assert post.slug == "a-title"
     assert post.category == "A category"
@@ -59,3 +59,21 @@ Paragraph éà
 
     assert 'title: foo' in file_content
     assert 'id: 12' in file_content
+
+
+class TestValidator:
+    def test_id_rules(self):
+        markdown.validator.validate({'id': {'foo': 12, 'bar': None}})
+
+        assert 'id' not in markdown.validator.errors
+
+    def test_empty_id(self):
+        markdown.validator.validate({})
+
+        assert 'id' not in markdown.validator.errors
+
+    def test_normalizes_id_to_dict(self):
+        meta = markdown.validator.normalized({
+            'title': 'Foo', 'slug': 'Foo', 'category': 'Cat'})
+
+        assert meta['id'] == {}

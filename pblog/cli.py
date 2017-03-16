@@ -8,7 +8,7 @@ from pblog import markdown
 from pblog.client import AuthenticationError, Client
 
 
-Environment = namedtuple('Environment', ('api_root', 'username'))
+Environment = namedtuple('Environment', ('name', 'api_root', 'username'))
 
 
 class EnvError(Exception):
@@ -46,6 +46,7 @@ def parse_env(env_file, env=None):
         raise EnvError("Environment %s not defined" % env_section)
 
     return Environment(
+        name=env,
         api_root=parser[env_section]['root_api'],
         username=parser[env_section]['username'])
 
@@ -103,14 +104,15 @@ def publish(ctx, post_path, encoding, password):
                 click.echo('%s: %s' % (field, error), err=True)
         raise click.ClickException('aborting')
 
-    if post.id is None:
+    if post.id.get(env.name) is None:
         result_post = client.create_post(post_path, encoding)
         click.echo('post %s successfully created' % result_post['id'])
+        post.id[env.name] = result_post['id']
     else:
-        result_post = client.update_post(post.id, post_path, encoding)
+        result_post = client.update_post(post.id[env.name], post_path, encoding)
         click.echo('post %s successfully updated' % result_post['id'])
 
     markdown.update_meta(
         post_path.open('r+b'),
-        {'id': result_post['id'], 'date': result_post['published_date']},
+        {'id': post.id, 'date': result_post['published_date']},
         encoding)

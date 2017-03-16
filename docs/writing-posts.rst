@@ -7,9 +7,8 @@ Some metadata are required to configure some post.
 
 ======== ======= ==============================================================
 
-id       integer id of this post in the web interface. If null or not set,
-                 publishing this file will create a new post. If not null, an
-                 existing post will be created
+id       dict    a dctionary mapping environment names to actual post id in
+                 the web interface.
 title    string  the title of this post
 slug     string  a slug to use for this post. It is not required to be a unique
                  value
@@ -32,6 +31,9 @@ For example:
 .. code-block:: text
 
    ---
+   id:
+       testing: 12
+       prod: 4
    title: My first blog post
    slug: my-first-blog-post
    category: Blogging
@@ -42,7 +44,13 @@ For example:
 
    Hello blogging world.
 
-When a paper is published, some metadata may be automatically inserted.
+When a paper is published, some metadata may be automatically inserted in the
+local markdown file.
 
-  + ``id`` when creating a new post
-  + ``date`` if not given
+When a post is published and has no id, a new post will be created on the web
+interface.
+The id part of the local markdown file will be automatically updated to
+reflect the web interface db id.
+
+If the ``date`` metadata is not given, it will be automatically set as the
+current date when publishing the post.

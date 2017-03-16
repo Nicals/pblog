@@ -22,8 +22,8 @@ def post_lists():
         categories=categories)
 
 
-@blueprint.route('/post/<post_id>/<slug>', defaults={'is_markdown': False})
 @blueprint.route('/post/<post_id>/<slug>.md', defaults={'is_markdown': True})
+@blueprint.route('/post/<post_id>/<slug>', defaults={'is_markdown': False})
 def show_post(post_id, slug, is_markdown):
     try:
         post = storage.get_post(post_id)

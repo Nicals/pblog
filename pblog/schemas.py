@@ -15,5 +15,5 @@ class PostSchema(marshmallow.ModelSchema):
     category = marshmallow.Nested(CategorySchema)
 
     class Meta:
-        fields = ('id', 'title', 'slug', 'category')
+        fields = ('id', 'title', 'slug', 'category', 'published_date')
         model = Post

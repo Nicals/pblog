@@ -40,3 +40,22 @@ first paragraph
 
     with pytest.raises(markdown.PostError):
         markdown.parse_markdown(md_file)
+
+
+def test_updates_meta():
+    md_file = BytesIO("""---
+
+title: foo
+
+---
+
+Paragraph éà
+""".encode('utf-8'))
+
+    markdown.update_meta(md_file, {'id': 12})
+
+    md_file.seek(0)
+    file_content = md_file.read().decode('utf-8')
+
+    assert 'title: foo' in file_content
+    assert 'id: 12' in file_content

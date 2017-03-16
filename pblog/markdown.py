@@ -3,6 +3,7 @@ from collections import namedtuple
 from cerberus import DocumentError, Validator
 from datetime import date
 import markdown
+from markdown_extra.meta import inject_meta
 import yaml
 
 
@@ -19,6 +20,18 @@ class PostError(Exception):
 
 PostDefinition = namedtuple('PostDefinition', (
     'id', 'title', 'slug', 'summary', 'date', 'category', 'markdown', 'html'))
+
+
+def update_meta(md_file, meta, encoding='utf-8'):
+    """
+    Args:
+        md_file (file): The file to replace
+        meta (dict):
+        encoding (str):
+    """
+    new_content = inject_meta(md_file.read().decode(encoding), meta, update=True)
+    md_file.seek(0)
+    md_file.write(new_content.encode(encoding))
 
 
 def parse_markdown(md_file, encoding='utf-8'):

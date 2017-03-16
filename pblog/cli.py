@@ -104,8 +104,13 @@ def publish(ctx, post_path, encoding, password):
         raise click.ClickException('aborting')
 
     if post.id is None:
-        post = client.create_post(post_path, encoding)
-        click.echo('post %s successfully created' % post['id'])
+        result_post = client.create_post(post_path, encoding)
+        click.echo('post %s successfully created' % result_post['id'])
     else:
-        post = client.update_post(post.id, post_path, encoding)
-        click.echo('post %s successfully updated' % post['id'])
+        result_post = client.update_post(post.id, post_path, encoding)
+        click.echo('post %s successfully updated' % result_post['id'])
+
+    markdown.update_meta(
+        post_path.open('r+b'),
+        {'id': result_post['id'], 'date': result_post['published_date']},
+        encoding)

@@ -182,7 +182,7 @@ class PostResource(Resource):
         try:
             post = Post.query.filter_by(id=post_id).one()
         except NoResultFound:
-            abort(404, errors={'post': ["The post with id {} does not exist".format(post_id)]})
+            return {'post': ["The post with id {} does not exist".format(post_id)]}, 404
 
         parser = build_edit_post_parser()
         args = parser.parse_args()

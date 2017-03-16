@@ -18,7 +18,7 @@ class PostError(Exception):
 
 
 PostDefinition = namedtuple('PostDefinition', (
-    'title', 'slug', 'summary', 'date', 'category', 'markdown', 'html'))
+    'id', 'title', 'slug', 'summary', 'date', 'category', 'markdown', 'html'))
 
 
 def parse_markdown(md_file, encoding='utf-8'):
@@ -56,6 +56,7 @@ def parse_markdown(md_file, encoding='utf-8'):
             errors={'markdown': ["could not parse header"]})
 
     validator = Validator({
+        'id': {'type': 'integer', 'default': None, 'nullable': True, 'required': False},
         'title': {'type': 'string', 'required': True},
         'slug': {'type': 'string', 'required': True, 'regex': '^[A-Za-z0-9_-]+$'},
         'category': {'type': 'string', 'required': True},
@@ -68,11 +69,14 @@ def parse_markdown(md_file, encoding='utf-8'):
     except DocumentError:
         raise PostError("No meta", errors={'': 'No meta'})
 
+    meta = validator.normalized(md.meta)
+
     return PostDefinition(
-        title=md.meta['title'],
-        slug=md.meta['slug'],
+        id=meta['id'],
+        title=meta['title'],
+        slug=meta['slug'],
         summary=md.summary,
-        date=md.meta.get('date', date.today()),
-        category=md.meta['category'],
+        date=meta.get('date', date.today()),
+        category=meta['category'],
         markdown=md_content,
         html=html_content)

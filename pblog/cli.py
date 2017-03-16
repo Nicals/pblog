@@ -92,6 +92,7 @@ def publish(ctx, post_path, encoding, password):
     except AuthenticationError:
         raise click.ClickException("authentication failed")
 
+    # parse post and report errors if any
     try:
         with post_path.open('rb') as post_file:
             post = markdown.parse_markdown(post_file, encoding='utf-8')
@@ -102,5 +103,9 @@ def publish(ctx, post_path, encoding, password):
                 click.echo('%s: %s' % (field, error), err=True)
         raise click.ClickException('aborting')
 
-    post = client.create_post(post_path, encoding=encoding)
-    click.echo(str(post))
+    if post.id is None:
+        post = client.create_post(post_path, encoding)
+        click.echo('post %s successfully created' % post['id'])
+    else:
+        post = client.update_post(post.id, post_path, encoding)
+        click.echo('post %s successfully updated' % post['id'])

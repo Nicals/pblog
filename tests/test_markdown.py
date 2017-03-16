@@ -8,6 +8,7 @@ from pblog import markdown
 
 def test_extracts_post_info():
     md_file = BytesIO("""---
+
 title: A title
 slug: a-title
 category: A category
@@ -22,6 +23,7 @@ Second paragraph
 
     post = markdown.parse_markdown(md_file)
 
+    assert post.id is None
     assert post.title == "A title"
     assert post.slug == "a-title"
     assert post.category == "A category"

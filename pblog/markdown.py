@@ -56,12 +56,18 @@ def update_meta(md_file, meta, encoding='utf-8'):
     md_file.write(new_content.encode(encoding))
 
 
-def parse_markdown(md_file, encoding='utf-8'):
+def parse_markdown(md_file, encoding='utf-8', md=None):
     """Extract and validates all post data from a markdown file.
 
     Args:
         md_file (file): The file to parse.
         encoding (str): The encoding used in the file.
+        md (markdown.Markdown): Markdown instance to use to parse the post
+            file. The markdown instance must have at lest the following
+            extensions enabled:
+                + ``markdown_extra.meta``
+                + ``markdown_extra.summary``
+            If none, a markdown instance with minimal extensions will be built.
 
     Returns:
         PostDefinition: The data extracted from the file
@@ -69,8 +75,9 @@ def parse_markdown(md_file, encoding='utf-8'):
     Raises:
         PostError: If any data fails to correctly validate
     """
-    md = markdown.Markdown(extensions=['markdown_extra.summary',
-                                       'markdown_extra.meta'])
+    if md is None:
+        md = markdown.Markdown(extensions=['markdown_extra.summary',
+                                           'markdown_extra.meta'])
 
     try:
         md_content = md_file.read().decode(encoding)

@@ -9,8 +9,15 @@ from pblog.markdown import parse_markdown
 
 
 class Storage:
-    def __init__(self, session):
+    def __init__(self, session, markdown=None):
+        """
+        Args:
+            session: SqlAlchemy session
+            markdown (markdown.Markdown): the markdown instance to use to
+                convert posts.
+        """
         self.session = session
+        self.markdown = markdown
 
     def get_or_create_category(self, name):
         """Try to retrieve a category by its name.

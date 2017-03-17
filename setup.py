@@ -41,7 +41,7 @@ setup(
         'marshmallow-sqlalchemy==0.12.1',
         'flask-marshmallow==0.7.0',
         'Flask-Script==2.0.5',
-        'markdown-extra==0.1.0',
+        'markdown-extra==0.2.0',
         'python-slugify==1.2.1',
         'Flask-Migrate==2.0.3',
         'requests==2.13.0',

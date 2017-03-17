@@ -2,6 +2,7 @@ from datetime import date
 from unittest.mock import patch
 from io import BytesIO
 
+from markdown import Markdown
 import pytest
 
 from pblog import markdown
@@ -78,6 +79,22 @@ first paragraph
 
     with pytest.raises(markdown.PostError):
         markdown.parse_markdown(md_file)
+
+
+def test_adds_required_extensions_if_needed():
+    md = Markdown()
+    md_file = BytesIO("""---
+title: foo
+category: Cat
+---
+
+Paragraph
+""".encode('utf-8'))
+
+    markdown.parse_markdown(md_file, md=md)
+
+    assert hasattr(md, 'meta') is True
+    assert hasattr(md, 'summary') is True
 
 
 def test_updates_meta():

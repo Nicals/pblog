@@ -75,9 +75,16 @@ def parse_markdown(md_file, encoding='utf-8', md=None):
     Raises:
         PostError: If any data fails to correctly validate
     """
+    required_exts = ['markdown_extra.summary', 'markdown_extra.meta']
     if md is None:
-        md = markdown.Markdown(extensions=['markdown_extra.summary',
-                                           'markdown_extra.meta'])
+        md = markdown.Markdown(extensions=required_exts)
+    else:
+        # make sure we have the required extensions
+        for ext in required_exts:
+            if ext not in md.registeredExtensions:
+                md.registerExtensions([ext], {})
+
+    md.reset()
 
     try:
         md_content = md_file.read().decode(encoding)

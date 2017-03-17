@@ -15,3 +15,4 @@ Welcome to P-Blog's documentation!
    quickstart
    writing-posts
    customize
+   settings

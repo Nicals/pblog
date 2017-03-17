@@ -5,6 +5,7 @@ import os
 
 from flask import Flask
 from flask_debugtoolbar import DebugToolbarExtension
+from markdown import Markdown
 
 from pblog.core import db, marshmallow
 from pblog.api.resources import blueprint as api_blueprint
@@ -31,7 +32,10 @@ def create_app():
 
     # init apps
     db.init_app(app)
-    app.storage = Storage(db.session, None)
+    markdown = Markdown(
+        extensions=app.config.get('PBLOG_MARKDOWN_EXTENSIONS', []),
+        extensions_configs=app.config.get('PBLOG_MARKDOWN_EXT_SETTINGS', {}))
+    app.storage = Storage(db.session, markdown)
     marshmallow.init_app(app)
     DebugToolbarExtension(app)
 

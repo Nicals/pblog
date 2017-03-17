@@ -9,15 +9,14 @@ The path of this file is provided to P-Blog by setting it in an ``PBLOG_SETTINGS
 environment variable.
 
 =========================== ========== ================================================================
-``DEBUG``                   **bool**   enable/disable debug mode
 ``SECRET_KEY``              **string** the secret key
 ``SQLALCHEMY_DATABASE_URI`` **string** the database URI to use. Example:
                                           + sqlite:////tmp/db.sqlite3
 ``PBLOG_CONTRIBUTORS``      **dict**   a dictionary mapping username to hashed passwords. For example:
                                           + 'admin': 'pbkdf2:...'
-``PBLOG_TEMPLATE_FOLDER``   **string** path to override default Pblog templates. Not required.
-                                       See :doc:`customize`.
 =========================== ========== ================================================================
+
+See :doc:`settings` for a full list of available settings.
 
 Create the database
 

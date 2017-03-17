@@ -41,6 +41,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.datastructures import FileStorage
 
 from pblog.models import Post
+from pblog.markdown import PostError
 from pblog import storage
 from pblog import security
 from pblog.schemas import PostSchema
@@ -158,7 +159,7 @@ class PostListResource(Resource):
 
         try:
             post = storage.create_post(args.post, args.encoding)
-        except storage.PostError as e:
+        except PostError as e:
             return dict(errors=e.errors), 400
 
         post_schema = PostSchema()
@@ -181,15 +182,21 @@ class PostResource(Resource):
         try:
             post = Post.query.filter_by(id=post_id).one()
         except NoResultFound:
-            abort(404, errors={'post': ["The post with id {} does not exist".format(post_id)]})
+            return {'post': ["The post with id {} does not exist".format(post_id)]}, 404
 
         parser = build_edit_post_parser()
         args = parser.parse_args()
 
         try:
             storage.update_post(post, args.post, args.encoding)
-        except storage.PostError as e:
+        except PostError as e:
             return dict(errors=e.errors), 400
 
         post_schema = PostSchema()
         return post_schema.dump(post).data
+
+
+@api.resource('/', '/<path:path>')
+class NotFound(Resource):
+    def dispatch_request(self, *args, **kwargs):
+        return dict(message='not found'), 404

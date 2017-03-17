@@ -18,7 +18,7 @@ def test_create_category_if_not_existing(db):
 def test_create_post(parse_markdown, db):
     md_file = Mock()
     parse_markdown.return_value = PostDefinition(
-        title='Title', slug='slug', summary='summary', date=date(2017, 3, 12),
+        id=None, title='Title', slug='slug', summary='summary', date=date(2017, 3, 12),
         category='Category', markdown='markdown', html='html')
 
     post = storage.create_post(md_file, encoding='iso-8859-1')
@@ -37,7 +37,7 @@ def test_create_post(parse_markdown, db):
 def test_update_post(parse_markdown, db):
     md_file = Mock()
     parse_markdown.return_value = PostDefinition(
-        title='Title', slug='slug', summary='summary',
+        id=2, title='Title', slug='slug', summary='summary',
         date=date(2017, 3, 12), category='Category',
         markdown='markdown', html='html')
     post = models.Post(

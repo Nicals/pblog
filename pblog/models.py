@@ -30,4 +30,4 @@ class Post(db.Model):
         'Category', backref=db.backref('posts', lazy='dynamic'))
 
     def __repr__(self):
-        return '<{} {}:{}>'.format(self.__class__.__name__, self.id, self.name)
+        return '<{} {}:{}>'.format(self.__class__.__name__, self.id, self.title)

@@ -25,6 +25,9 @@ def create_app():
     if ENV_SETTINGS in os.environ:
         app.config.from_envvar(ENV_SETTINGS)
 
+    if 'PBLOG_TEMPLATE_FOLDER' in app.config:
+        app.template_folder = app.config['PBLOG_TEMPLATE_FOLDER']
+
     # init apps
     db.init_app(app)
     marshmallow.init_app(app)

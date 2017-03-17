@@ -15,6 +15,8 @@ environment variable.
                                           + sqlite:////tmp/db.sqlite3
 ``PBLOG_CONTRIBUTORS``      **dict**   a dictionary mapping username to hashed passwords. For example:
                                           + 'admin': 'pbkdf2:...'
+``PBLOG_TEMPLATE_FOLDER``   **string** path to override default Pblog templates. Not required.
+                                       See :doc:`customize`.
 =========================== ========== ================================================================
 
 Create the database

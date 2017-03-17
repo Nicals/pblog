@@ -5,9 +5,11 @@ Customize your blog
 Templates
 ---------
 
-Url are generated using Flask's `url_for <http://flask.pocoo.org/docs/0.12/api/#flask.url_for>`_ function.
+Templates can be ovrriden by providing a ``PBLOG_TEMPLATE_FOLDER`` settings.
+The value is the path to a directory to take templates from insteand of using
+Pblog defaults one.
 
-The following routes are defined:
+The following routes are defined within Pblog:
 
 .. autofunction:: pblog.frontend.blueprint.show_post
 

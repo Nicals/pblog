@@ -42,7 +42,6 @@ from werkzeug.datastructures import FileStorage
 
 from pblog.models import Post
 from pblog.markdown import PostError
-from pblog import storage
 from pblog import security
 from pblog.schemas import PostSchema
 
@@ -158,7 +157,7 @@ class PostListResource(Resource):
         args = parser.parse_args()
 
         try:
-            post = storage.create_post(args.post, args.encoding)
+            post = current_app.storage.create_post(args.post, args.encoding)
         except PostError as e:
             return dict(errors=e.errors), 400
 
@@ -188,7 +187,7 @@ class PostResource(Resource):
         args = parser.parse_args()
 
         try:
-            storage.update_post(post, args.post, args.encoding)
+            current_app.storage.update_post(post, args.post, args.encoding)
         except PostError as e:
             return dict(errors=e.errors), 400
 

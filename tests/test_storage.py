@@ -2,11 +2,10 @@ from datetime import date
 from unittest.mock import Mock, patch
 
 from pblog.markdown import PostDefinition
-from pblog import storage
 from pblog import models
 
 
-def test_create_category_if_not_existing(db):
+def test_create_category_if_not_existing(storage):
     category = storage.get_or_create_category("Category")
 
     assert category.id is None
@@ -15,7 +14,7 @@ def test_create_category_if_not_existing(db):
 
 
 @patch('pblog.storage.parse_markdown')
-def test_create_post(parse_markdown, db):
+def test_create_post(parse_markdown, storage):
     md_file = Mock()
     parse_markdown.return_value = PostDefinition(
         id=None, title='Title', slug='slug', summary='summary', date=date(2017, 3, 12),
@@ -34,7 +33,7 @@ def test_create_post(parse_markdown, db):
 
 
 @patch('pblog.storage.parse_markdown')
-def test_update_post(parse_markdown, db):
+def test_update_post(parse_markdown, db, storage):
     md_file = Mock()
     parse_markdown.return_value = PostDefinition(
         id=2, title='Title', slug='slug', summary='summary',
@@ -61,7 +60,7 @@ def test_update_post(parse_markdown, db):
     assert new_post.html_content == 'html'
 
 
-def test_get_existing_category(db):
+def test_get_existing_category(db, storage):
     db.session.add(models.Category(name='Category', slug='cat'))
     db.session.commit()
 
@@ -70,7 +69,7 @@ def test_get_existing_category(db):
     assert category.name == 'Category'
 
 
-def test_get_post(db):
+def test_get_post(db, storage):
     post = models.Post(
         title='Title', slug='slug',
         category=models.Category(name='Category', slug='c'),
@@ -81,7 +80,7 @@ def test_get_post(db):
     assert storage.get_post(post.id) == post
 
 
-def test_get_all_categories(db):
+def test_get_all_categories(db, storage):
     category = models.Category(name='Category', slug='c')
     db.session.add(models.Post(
         title='Title', slug='slug', category=category, summary='',

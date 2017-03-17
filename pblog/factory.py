@@ -3,12 +3,13 @@
 
 import os
 
-from flask import Flask
+from flask import Flask, g
 from flask_debugtoolbar import DebugToolbarExtension
 
 from pblog.core import db, marshmallow
 from pblog.api.resources import blueprint as api_blueprint
 from pblog.frontend.blueprint import blueprint as blog_blueprint
+from pblog.storage import Storage
 
 ENV_SETTINGS = 'PBLOG_SETTINGS'
 
@@ -30,6 +31,7 @@ def create_app():
 
     # init apps
     db.init_app(app)
+    app.storage = Storage(db.session)
     marshmallow.init_app(app)
     DebugToolbarExtension(app)
 

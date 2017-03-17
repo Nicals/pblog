@@ -1,12 +1,11 @@
 from flask import abort
 from flask import Blueprint
+from flask import current_app
 from flask import redirect
 from flask import render_template
 from flask import url_for
 from flask import Response
 from sqlalchemy.orm.exc import NoResultFound
-
-from pblog import storage
 
 
 blueprint = Blueprint('blog', __name__, template_folder='templates')
@@ -20,8 +19,8 @@ def posts_list():
         posts: a list of ``pblog.models.Post`` instances
         categories: a list of all ``pblog.models.Category`` that have posts linked to them.
     """
-    posts = storage.get_all_posts()
-    categories = storage.get_all_categories()
+    posts = current_app.storage.get_all_posts()
+    categories = current_app.storage.get_all_categories()
     return render_template(
         'pblog/posts-list.html',
         posts=posts,
@@ -49,7 +48,7 @@ def show_post(post_id, slug, is_markdown):
             post. If False, will display the HTML rendered version
     """
     try:
-        post = storage.get_post(post_id)
+        post = current_app.storage.get_post(post_id)
     except NoResultFound:
         abort(404)
 

@@ -6,6 +6,7 @@ import pytest
 from pblog.core import db as _db
 from pblog.models import Post, Category
 from pblog.factory import create_app
+from pblog.storage import Storage
 
 
 SETTINGS_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'settings.py')
@@ -46,3 +47,8 @@ def post(db):
     db.session.commit()
 
     yield post
+
+
+@pytest.fixture(scope='function')
+def storage(db):
+    yield Storage(db.session)

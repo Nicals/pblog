@@ -49,7 +49,7 @@ class Storage:
         Raises:
             PostError: If any of the data fails to validate
         """
-        post_definition = parse_markdown(md_file, encoding)
+        post_definition = parse_markdown(md_file, encoding, self.markdown)
 
         post = Post(
             title=post_definition.title,
@@ -76,7 +76,7 @@ class Storage:
         Raises:
             pblog.storage.PostError: If any data fails to validate.
         """
-        post_definition = parse_markdown(md_file, encoding)
+        post_definition = parse_markdown(md_file, encoding, self.markdown)
 
         post.title = post_definition.title
         post.slug = post_definition.slug

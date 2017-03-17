@@ -19,7 +19,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 # -- General configuration ------------------------------------------------
@@ -33,9 +33,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
     'sphinx.ext.doctest',
     'sphinx.ext.githubpages',
-    'sphinxcontrib.programoutput']
+    'sphinxcontrib.programoutput',
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

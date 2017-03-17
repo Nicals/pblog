@@ -1,4 +1,2 @@
 -r requirements.txt
 pytest==3.0.6
-Sphinx==1.5.3
-sphinxcontrib-programoutput==0.8

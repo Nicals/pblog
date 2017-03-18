@@ -30,6 +30,7 @@ Second paragraph
     assert post.slug == "a-title"
     assert post.category == "A category"
     assert post.date == date(2017, 5, 12)
+    assert post.summary == "First paragraph"
 
 
 @patch('pblog.markdown.date')
@@ -50,6 +51,7 @@ date: null
     assert post.id == {}
     assert post.slug == 'a-title'
     assert post.date == date(2017, 3, 15)
+    assert post.summary == ''
 
 
 @patch('pblog.markdown.date')

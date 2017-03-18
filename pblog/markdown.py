@@ -119,7 +119,7 @@ def parse_markdown(md_file, encoding='utf-8', md=None):
         meta['date'] = date.today()
 
     return PostDefinition(
-        summary=md.summary,
+        summary=md.summary if md.summary is not None else '',
         markdown=md_content,
         html=html_content,
         **meta)

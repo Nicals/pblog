@@ -39,6 +39,7 @@ def show_post(post_id, slug, is_markdown):
 
     Displays the ``pblog/post.html`` template with the following context:
         post: a ``pblog.models.Post`` instance.
+        categories: a list of all ``pblog.models.Category`` that have posts linked to them.
 
     Args:
         post_id (str): unique identifier of the post
@@ -69,7 +70,10 @@ def show_post(post_id, slug, is_markdown):
 
 @blueprint.app_errorhandler(404)
 def show_404(err):
-    """Displays the default 404 page. The template is ``pblog.404.html``.
+    """Displays the default 404 page.
+
+    The template is ``pblog.404.html`` and have the following context:
+        categories: a list of all ``pblog.models.Category`` that have posts linked to them.
     """
     categories = current_app.storage.get_all_categories()
     return render_template('pblog/404.html', categories=categories), err.code

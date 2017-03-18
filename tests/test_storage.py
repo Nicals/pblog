@@ -22,7 +22,7 @@ def test_create_post(parse_markdown, storage):
 
     post = storage.create_post(md_file, encoding='iso-8859-1')
 
-    parse_markdown.assert_called_once_with(md_file, 'iso-8859-1')
+    parse_markdown.assert_called_once_with(md_file, 'iso-8859-1', None)
     assert post.title == 'Title'
     assert post.slug == 'slug'
     assert post.summary == 'summary'
@@ -49,7 +49,7 @@ def test_update_post(parse_markdown, db, storage):
 
     storage.update_post(post, md_file, 'iso-8859-1')
 
-    parse_markdown.assert_called_once_with(md_file, 'iso-8859-1')
+    parse_markdown.assert_called_once_with(md_file, 'iso-8859-1', None)
     new_post = models.Post.query.filter_by(id=post.id).one()
     assert new_post.title == 'Title'
     assert new_post.slug == 'slug'

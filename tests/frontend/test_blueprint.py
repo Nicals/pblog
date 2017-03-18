@@ -68,7 +68,7 @@ class TestShowPost:
 
 
 class TestShow404:
-    def test_renders_template(self, app, client):
+    def test_renders_template(self, db, app, client):
         with capture_template(app) as templates:
             response = client.get('/unexisting')
 

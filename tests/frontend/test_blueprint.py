@@ -29,7 +29,7 @@ class TestPostsList:
 
 
 class TestShowPost:
-    def test_template_renderd(self, post, app, client):
+    def test_template_rendered(self, post, app, client):
         with capture_template(app) as templates:
             response = client.get('/post/%d/%s' % (post.id, post.slug))
 
@@ -65,6 +65,29 @@ class TestShowPost:
 
         assert response.status_code == 200
         assert response.headers['Content-Type'].startswith('text/plain') is True
+
+
+class TestShowPostsInCategory:
+    def test_template_rendered(self, post, app, client):
+        with capture_template(app) as templates:
+            response = client.get('/category/%d/%s' % (post.category.id, post.category.slug))
+
+            assert response.status_code == 200
+            assert len(templates) >= 1
+            assert templates[0][0].name == 'pblog/posts-list.html'
+
+    def test_corrects_slug(self, post, app, client):
+        response = client.get('/category/%d/invalid-slug' % post.category.id,
+                              follow_redirects=False)
+
+        assert response.status_code == 301
+        location = urlparse(response.location).path
+        assert location == '/category/%s/%s' % (post.category.id, post.category.slug)
+
+    def test_raises_404(self, db, app, client):
+        response = client.get('/category/1/foo')
+
+        assert response.status_code == 404
 
 
 class TestShow404:

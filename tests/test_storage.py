@@ -1,6 +1,9 @@
 from datetime import date
 from unittest.mock import Mock, patch
 
+import pytest
+from sqlalchemy.orm.exc import NoResultFound
+
 from pblog.markdown import PostDefinition
 from pblog import models
 
@@ -90,3 +93,37 @@ def test_get_all_categories(db, storage):
     db.session.commit()
 
     assert storage.get_all_categories() == [category]
+
+
+def test_get_posts_in_category(db, storage):
+    category = models.Category(name='Category', slug='c')
+    post = models.Post(
+        title="In Category", slug="ic", summary='', md_content='m',
+        html_content='h', published_date=date(2017, 3, 12), category=category)
+    other_post = models.Post(
+        title="Out of Category", slug="ooc", summary='', md_content='m',
+        html_content='h', published_date=date(2017, 3, 12),
+        category=models.Category(name='Other category', slug='oc'))
+    db.session.add(post)
+    db.session.add(other_post)
+    db.session.commit()
+
+    assert storage.get_posts_in_category(category.id) == [post]
+
+
+def test_get_not_existing_category(storage):
+    with pytest.raises(NoResultFound):
+        storage.get_category(1)
+
+
+def test_category_without_posts(storage):
+    category = models.Category(name='Foo', slug='foo')
+    storage.session.add(category)
+    storage.session.commit()
+
+    with pytest.raises(NoResultFound):
+        storage.get_category(category.id)
+
+
+def test_get_cateogyr(storage, post):
+    assert storage.get_category(post.category.id) == post.category

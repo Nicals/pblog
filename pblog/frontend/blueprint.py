@@ -27,6 +27,43 @@ def posts_list():
         categories=categories)
 
 
+@blueprint.route('/category/<category_id>/<slug>')
+def list_posts_in_category(category_id, slug):
+    """Displays all posts in a given category.
+
+    If the category does not exist or if no posts are associated with it, a
+    404 response will be returned.
+
+    If the category exists but the slug is not the one provided in the url,
+    a permanent redirection will be triggered to the correct url.
+
+    Displays the ``pblog/post.html`` template with the following context:
+        post: a ``pblog.models.Post`` instance.
+        categories: a list of all ``pblog.models.Category`` that have posts linked to them.
+
+    Args:
+        category_id (int): id of the Category to fetch post for
+        slug (string): slug of the category
+    """
+    try:
+        category = current_app.storage.get_category(category_id)
+    except NoResultFound:
+        abort(404)
+
+    if category.slug != slug:
+        return redirect(
+            url_for('blog.list_posts_in_category',
+                    category_id=category.id,
+                    slug=category.slug),
+            code=301)
+    posts = current_app.storage.get_posts_in_category(category_id)
+
+    return render_template(
+        'pblog/posts-list.html',
+        posts=posts,
+        categories=current_app.storage.get_all_categories())
+
+
 @blueprint.route('/post/<post_id>/<slug>.md', defaults={'is_markdown': True})
 @blueprint.route('/post/<post_id>/<slug>', defaults={'is_markdown': False})
 def show_post(post_id, slug, is_markdown):

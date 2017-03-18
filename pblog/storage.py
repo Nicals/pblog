@@ -111,6 +111,22 @@ class Storage:
         """
         return Post.query.filter_by(id=post_id).one()
 
+    def get_category(self, category_id):
+        """Get a category by its id that have at least one associated post.
+
+        Args:
+            category_id: Unique identifier of the category to fetch
+
+        Raises:
+            sqlalchemy.orm.exc.NoResultFound: If no categories exists with
+                this id or if a category was found without any associated
+                posts.
+
+        Returns:
+            pblog.models.Category: The fetched category
+        """
+        return Category.query.filter_by(id=category_id).join(Post).one()
+
     def get_all_categories(self):
         """Returns all categories which have at least one associated post
 
@@ -118,3 +134,14 @@ class Storage:
             list of pblog.models.Category:
         """
         return Category.query.join(Post).all()
+
+    def get_posts_in_category(self, category_id):
+        """Get all posts belonging to a given category.
+
+        Args:
+            category_id: Unique identifier of the category to filter by
+
+        Returns:
+            list of pblgo.models.Post: Filtered posts
+        """
+        return Post.query.filter_by(category_id=category_id).all()

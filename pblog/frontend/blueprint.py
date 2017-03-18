@@ -47,6 +47,7 @@ def show_post(post_id, slug, is_markdown):
         is_markdown (bool): If True, will display the markdown content of the
             post. If False, will display the HTML rendered version
     """
+    categories = current_app.storage.get_all_categories()
     try:
         post = current_app.storage.get_post(post_id)
     except NoResultFound:
@@ -63,11 +64,12 @@ def show_post(post_id, slug, is_markdown):
 
     if is_markdown:
         return Response(post.md_content, mimetype='text/plain')
-    return render_template('pblog/post.html', post=post)
+    return render_template('pblog/post.html', post=post, categories=categories)
 
 
 @blueprint.app_errorhandler(404)
 def show_404(err):
     """Displays the default 404 page. The template is ``pblog.404.html``.
     """
-    return render_template('pblog/404.html'), err.code
+    categories = current_app.storage.get_all_categories()
+    return render_template('pblog/404.html', categories=categories), err.code

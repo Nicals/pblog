@@ -2,22 +2,22 @@
 
 
 {% block page_content %}
-{% if categories %}
-<ul>
-  {% for category in categories %}
-  <li>{{ category }}</li>
-  {% endfor %}
-</ul>
-{% endif %}
-
 {% if posts %}
   {% for post in posts %}
-  <div>
-    <h2><a href="{{  url_for("blog.show_post", post_id=post.id, slug=post.slug) }}">{{ post.title }}</a></h2>
-    <p>
+  <article class="post-overview">
+    <div class="post-header">
+      <h2><a href="{{  url_for("blog.show_post", post_id=post.id, slug=post.slug) }}">{{ post.title }}</a></h2>
+    </div>
+    <p class="post-summary">
       {{ post.summary }}
     </p>
-  </div>
+    <div class="post-footer">
+      <time pubdate="{{ post.published_date }}">{{ post.published_date.strftime("%B %d, %Y") }}</time>
+      <div class="meta-category">
+        <a href="#">{{ post.category.name }}</a>
+      </div>
+    </div>
+  </article>
   {% endfor %}
 {% else %}
 <p>

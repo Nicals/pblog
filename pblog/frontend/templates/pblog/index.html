@@ -1,8 +1,30 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <title>{% block page_title %}P-Blog{% endblock %}</title>
+
+    <link rel="stylesheet" href="{{ url_for("static", filename="normalize.css") }}" />
+    <link rel="stylesheet" href="{{ url_for("static", filename="pblog.css") }}" />
+    <link rel="stylesheet" href="{{ url_for("static", filename="pygments.css") }}" />
   </head>
   <body>
-    {% block page_content %}{% endblock %}
+    <header class="page-header">
+      <a href="{{ url_for("blog.posts_list") }}" class="blog-title">P-Blog</a>
+
+      {% if categories %}
+      <nav class="topic-nav">
+        <ul>
+          <li><a href="{{ url_for("blog.posts_list") }}">All topics</a></li>
+          {% for category in categories %}
+          <li><a href="#">{{ category.name }}</a></li>
+          {% endfor %}
+        </ul>
+      </nav>
+      {% endif %}
+    </header>
+
+    <main class="container">
+      {% block page_content %}{% endblock %}
+    </section>
   </body>
 </html>

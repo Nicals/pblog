@@ -35,7 +35,6 @@ setup(
     install_requires=[
         'Flask==0.12',
         'Flask-SQLAlchemy==2.1',
-        'Flask-DebugToolbar==0.10.1',
         'Markdown==2.6.8',
         'Flask-RESTful==0.3.5',
         'PyYAML==3.12',

@@ -1,40 +1,65 @@
 Quickstart
 ==========
 
-Starting the web server
+``PBlog`` is constructed on two main parts.
+The first one is a flask extension in the `flask_pblog` module.
+The second one contains the command line interface and core functionalities
+in the `pblog` module.
+
+Building the web server
 -----------------------
 
-Settings are set in a python settings file.
-The path of this file is provided to P-Blog by setting it in an ``PBLOG_SETTINGS``
-environment variable.
+Build the web part of the blog from a flask application using the ``flask_blog``
+extension.
 
-=========================== ========== ================================================================
-``SECRET_KEY``              **string** the secret key
-``SQLALCHEMY_DATABASE_URI`` **string** the database URI to use. Example:
-                                          + sqlite:////tmp/db.sqlite3
-``PBLOG_CONTRIBUTORS``      **dict**   a dictionary mapping username to hashed passwords. For example:
-                                          + 'admin': 'pbkdf2:...'
-=========================== ========== ================================================================
+This extensions must be provided with a :class:`~flask_pblog.storage.Storage` instance.
+The storage provided with Pblog uses SQLAlchemy, so you should provide it with
+a session instance.
 
-See :doc:`settings` for a full list of available settings.
+.. code:: python
 
-Create the database
+   import os
 
-.. code-block:: console
+   from flask import Flask
+   from flask_sqlalchemy import SQLAlchemy
+   import flask_pblog
+   from flask_pblog import PBlog
+   from flask_pblog.storage import Storage
 
-  $ python manage.py upgrade
+   static_folder = os.path.join(
+       os.path.dirname(flask_pblog.__file__), 'static')
 
-The web server is started by the ``wsgi.py`` script.
+   app = Flask(__name__, static_folder=static_folder)
+   # for Flask
+   app.config['SECRET_KEY'] = 'not-so-secret'
+   # for SQLAlchemy
+   app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
+   # list of contributors
+   app.config['PBLOG_CONTRIBUTORS'] = {
+       'admin': 'pbkdf2:.....',
+   }
+   db = SQLAlchemy(app)
+   PBlog(app, storage=Storage(db.session)
 
-.. code-block:: console
+   app.run()
 
-   $ PBLOG_SETTINGS=~/blog.settings.py python wsgi.py
+Contributors for the blog are stored in a dictionary in the settings.
+This dictionary maps a username to a hashed passsword.
+
+PBlog is shipped with some default static files (only CSS).
+You can use your own static files or use the provided ones as shown in
+the example.
 
 
 Using the command line
 ----------------------
 
+Once the web server is up and running, the command line part of the application
+can be setup.
+
 A ``pblog.ini`` file must be created.
+This file is used to tell pblog where we will want to upload new posts.
+
 When using ``P-Blog`` command line interface, a ``pblog.ini`` file must be
 present in the current directory.
 

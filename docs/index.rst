@@ -16,3 +16,4 @@ Welcome to P-Blog's documentation!
    writing-posts
    customize
    settings
+   api

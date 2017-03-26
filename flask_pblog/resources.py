@@ -40,10 +40,10 @@ import itsdangerous
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.datastructures import FileStorage
 
-from pblog.models import Post
+from flask_pblog.models import Post
+from flask_pblog import security
+from flask_pblog.schemas import PostSchema
 from pblog.markdown import PostError
-from pblog import security
-from pblog.schemas import PostSchema
 
 
 blueprint = Blueprint('api', __name__)

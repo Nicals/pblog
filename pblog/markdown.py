@@ -10,11 +10,14 @@ import yaml
 
 class PostError(Exception):
     """Raised when building a post is impossible
-
-    Attributes:
-        errors (dict): A dictionary mapping field name to a list of errors.
     """
     def __init__(self, message, errors):
+        """
+        Args:
+            message (str): General message describing errors
+            errors (dict): Dictionnary mappings field name to a list of string
+                describing errors that occured.
+        """
         self.errors = errors
         super().__init__(message)
 
@@ -45,7 +48,8 @@ PostDefinition = namedtuple('PostDefinition', (
 
 
 def update_meta(md_file, meta, encoding='utf-8'):
-    """
+    """Replace some markdown file metadata by others.
+
     Args:
         md_file (file): The file to replace
         meta (dict):
@@ -64,9 +68,9 @@ def parse_markdown(md_file, encoding='utf-8', md=None):
         encoding (str): The encoding used in the file.
         md (markdown.Markdown): Markdown instance to use to parse the post
             file. The markdown instance must have at lest the following
-            extensions enabled:
-                + ``markdown_extra.meta``
-                + ``markdown_extra.summary``
+            extensions enabled: ``markdown_extra.meta`` ``markdown_extra.summary``
+            If some of these extensions are missing, they will be automatically
+            registered into the markdown instance.
             If none, a markdown instance with minimal extensions will be built.
 
     Returns:

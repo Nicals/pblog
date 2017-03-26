@@ -4,15 +4,18 @@
 from sqlalchemy.orm.exc import NoResultFound
 from slugify import slugify
 
-from pblog.models import Category, Post
+from flask_pblog.models import Category, Post
 from pblog.markdown import parse_markdown
 
 
 class Storage:
+    """This class implements database access through SQLAlchemy
+    """
     def __init__(self, session, markdown=None):
         """
         Args:
-            session: SqlAlchemy session
+            session (sqlalchemy.orm.session.Session): session to use to
+                access the database
             markdown (markdown.Markdown): the markdown instance to use to
                 convert posts.
         """
@@ -29,10 +32,10 @@ class Storage:
             name (str): The name of the category to fetch.
 
         Returns:
-            pblog.models.Category: The new category
+            flask_pblog.models.Category: The new category
         """
         try:
-            return Category.query.filter_by(name=name).one()
+            return self.session.query(Category).filter_by(name=name).one()
         except NoResultFound:
             return Category(name=name, slug=slugify(name))
 
@@ -44,10 +47,10 @@ class Storage:
             encoding (str): The encoding used in the markdown file.
 
         Returns:
-            pblog.models.Post: The created post.
+            flask_pblog.models.Post: The created post.
 
         Raises:
-            PostError: If any of the data fails to validate
+            pblog.markdown.PostError: If any of the data fails to validate
         """
         post_definition = parse_markdown(md_file, encoding, self.markdown)
 
@@ -69,12 +72,12 @@ class Storage:
         """Updates a post from a markdown file and saves it in the database.
 
         Ags:
-            post (pblog.models.Post): The post to update
+            post (flask_pblog.models.Post): The post to update
             md_file (file): The markdown file to update the post from
             encoding (str): The encoding used in the file
 
         Raises:
-            pblog.storage.PostError: If any data fails to validate.
+            pblog.markdown.PostError: If any data fails to validate.
         """
         post_definition = parse_markdown(md_file, encoding, self.markdown)
 
@@ -93,9 +96,9 @@ class Storage:
         """Get all stored posts.
 
         Returns:
-            list of pblog.models.Post:
+            list of flask_pblog.models.Post:
         """
-        return Post.query.all()
+        return self.session.query(Post).all()
 
     def get_post(self, post_id):
         """Get a post by its id.
@@ -107,9 +110,9 @@ class Storage:
             sqlalchemy.orm.exc.NoResultFound: If no post exists with this id
 
         Returns:
-            pblog.models.Post: The fetched post
+            flask_pblog.models.Post: The fetched post
         """
-        return Post.query.filter_by(id=post_id).one()
+        return self.session.query(Post).filter_by(id=post_id).one()
 
     def get_category(self, category_id):
         """Get a category by its id that have at least one associated post.
@@ -123,17 +126,17 @@ class Storage:
                 posts.
 
         Returns:
-            pblog.models.Category: The fetched category
+            flask_pblog.models.Category: The fetched category
         """
-        return Category.query.filter_by(id=category_id).join(Post).one()
+        return self.session.query(Category).filter_by(id=category_id).join(Post).one()
 
     def get_all_categories(self):
         """Returns all categories which have at least one associated post
 
         Returns:
-            list of pblog.models.Category:
+            list of flask_pblog.models.Category:
         """
-        return Category.query.join(Post).all()
+        return self.session.query(Category).join(Post).all()
 
     def get_posts_in_category(self, category_id):
         """Get all posts belonging to a given category.
@@ -142,6 +145,6 @@ class Storage:
             category_id: Unique identifier of the category to filter by
 
         Returns:
-            list of pblgo.models.Post: Filtered posts
+            list of flask_pblgo.models.Post: Filtered posts
         """
-        return Post.query.filter_by(category_id=category_id).all()
+        return self.session.query(Post).filter_by(category_id=category_id).all()

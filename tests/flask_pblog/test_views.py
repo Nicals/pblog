@@ -49,7 +49,7 @@ class TestShowPost:
         assert response.status_code == 301
         assert urlparse(response.location).path == '/post/%d/%s.md' % (post.id, post.slug)
 
-    def test_raises_404(self, client, db):
+    def test_raises_404(self, client):
         response = client.get('/post/1/foo')
 
         assert response.status_code == 404
@@ -84,14 +84,14 @@ class TestShowPostsInCategory:
         location = urlparse(response.location).path
         assert location == '/category/%s/%s' % (post.category.id, post.category.slug)
 
-    def test_raises_404(self, db, app, client):
+    def test_raises_404(self, app, client):
         response = client.get('/category/1/foo')
 
         assert response.status_code == 404
 
 
 class TestShow404:
-    def test_renders_template(self, db, app, client):
+    def test_renders_template(self, app, client):
         with capture_template(app) as templates:
             response = client.get('/unexisting')
 

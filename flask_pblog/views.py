@@ -19,8 +19,9 @@ def posts_list():
         posts: a list of ``pblog.models.Post`` instances
         categories: a list of all ``pblog.models.Category`` that have posts linked to them.
     """
-    posts = current_app.storage.get_all_posts()
-    categories = current_app.storage.get_all_categories()
+    storage = current_app.extensions['pblog'].storage
+    posts = storage.get_all_posts()
+    categories = storage.get_all_categories()
     return render_template(
         'pblog/posts-list.html',
         posts=posts,
@@ -45,8 +46,10 @@ def list_posts_in_category(category_id, slug):
         category_id (int): id of the Category to fetch post for
         slug (string): slug of the category
     """
+    storage = current_app.extensions['pblog'].storage
+
     try:
-        category = current_app.storage.get_category(category_id)
+        category = storage.get_category(category_id)
     except NoResultFound:
         abort(404)
 
@@ -56,12 +59,12 @@ def list_posts_in_category(category_id, slug):
                     category_id=category.id,
                     slug=category.slug),
             code=301)
-    posts = current_app.storage.get_posts_in_category(category_id)
+    posts = storage.get_posts_in_category(category_id)
 
     return render_template(
         'pblog/posts-list.html',
         posts=posts,
-        categories=current_app.storage.get_all_categories())
+        categories=storage.get_all_categories())
 
 
 @blueprint.route('/post/<post_id>/<slug>.md', defaults={'is_markdown': True})
@@ -85,9 +88,10 @@ def show_post(post_id, slug, is_markdown):
         is_markdown (bool): If True, will display the markdown content of the
             post. If False, will display the HTML rendered version
     """
-    categories = current_app.storage.get_all_categories()
+    storage = current_app.extensions['pblog'].storage
+    categories = storage.get_all_categories()
     try:
-        post = current_app.storage.get_post(post_id)
+        post = storage.get_post(post_id)
     except NoResultFound:
         abort(404)
 
@@ -112,5 +116,5 @@ def show_404(err):
     The template is ``pblog.404.html`` and have the following context:
         categories: a list of all ``pblog.models.Category`` that have posts linked to them.
     """
-    categories = current_app.storage.get_all_categories()
+    categories = current_app.extensions['pblog'].storage.get_all_categories()
     return render_template('pblog/404.html', categories=categories), err.code

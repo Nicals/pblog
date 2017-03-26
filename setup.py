@@ -14,7 +14,7 @@ setup(
     author='Nicolas Appriou',
     author_email='nicolas.appriou@gmail.com',
     license='MIT',
-    packages=['pblog'],
+    packages=['pblog', 'flask_pblog'],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Environment :: Console',
@@ -41,7 +41,6 @@ setup(
         'PyYAML==3.12',
         'Cerberus==1.1',
         'marshmallow-sqlalchemy==0.12.1',
-        'flask-marshmallow==0.7.0',
         'Flask-Script==2.0.5',
         'markdown-extra==0.2.0',
         'python-slugify==1.2.1',

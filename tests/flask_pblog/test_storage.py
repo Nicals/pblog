@@ -5,7 +5,7 @@ import pytest
 from sqlalchemy.orm.exc import NoResultFound
 
 from pblog.markdown import PostDefinition
-from pblog import models
+from flask_pblog import models
 
 
 def test_create_category_if_not_existing(storage):
@@ -16,7 +16,7 @@ def test_create_category_if_not_existing(storage):
     assert category.slug == 'category'
 
 
-@patch('pblog.storage.parse_markdown')
+@patch('flask_pblog.storage.parse_markdown')
 def test_create_post(parse_markdown, storage):
     md_file = Mock()
     parse_markdown.return_value = PostDefinition(
@@ -35,8 +35,8 @@ def test_create_post(parse_markdown, storage):
     assert post.html_content == 'html'
 
 
-@patch('pblog.storage.parse_markdown')
-def test_update_post(parse_markdown, db, storage):
+@patch('flask_pblog.storage.parse_markdown')
+def test_update_post(parse_markdown, storage):
     md_file = Mock()
     parse_markdown.return_value = PostDefinition(
         id=2, title='Title', slug='slug', summary='summary',
@@ -47,13 +47,13 @@ def test_update_post(parse_markdown, db, storage):
         published_date=date(2010, 1, 2),
         category=models.Category(name='Old Category', slug='oc'), md_content='m',
         html_content='h')
-    db.session.add(post)
-    db.session.commit()
+    storage.session.add(post)
+    storage.session.commit()
 
     storage.update_post(post, md_file, 'iso-8859-1')
 
     parse_markdown.assert_called_once_with(md_file, 'iso-8859-1', None)
-    new_post = models.Post.query.filter_by(id=post.id).one()
+    new_post = storage.session.query(models.Post).filter_by(id=post.id).one()
     assert new_post.title == 'Title'
     assert new_post.slug == 'slug'
     assert new_post.summary == 'summary'
@@ -63,39 +63,39 @@ def test_update_post(parse_markdown, db, storage):
     assert new_post.html_content == 'html'
 
 
-def test_get_existing_category(db, storage):
-    db.session.add(models.Category(name='Category', slug='cat'))
-    db.session.commit()
+def test_get_existing_category(storage):
+    storage.session.add(models.Category(name='Category', slug='cat'))
+    storage.session.commit()
 
     category = storage.get_or_create_category('Category')
     assert category.id is not None
     assert category.name == 'Category'
 
 
-def test_get_post(db, storage):
+def test_get_post(storage):
     post = models.Post(
         title='Title', slug='slug',
         category=models.Category(name='Category', slug='c'),
         published_date=date(2017, 3, 1), md_content='m', html_content='h')
-    db.session.add(post)
-    db.session.commit()
+    storage.session.add(post)
+    storage.session.commit()
 
     assert storage.get_post(post.id) == post
 
 
-def test_get_all_categories(db, storage):
+def test_get_all_categories(storage):
     category = models.Category(name='Category', slug='c')
-    db.session.add(models.Post(
+    storage.session.add(models.Post(
         title='Title', slug='slug', category=category, summary='',
         md_content='m',
         html_content='h', published_date=date(2017, 3, 13)))
-    db.session.add(models.Category(name='foo', slug='c'))
-    db.session.commit()
+    storage.session.add(models.Category(name='foo', slug='c'))
+    storage.session.commit()
 
     assert storage.get_all_categories() == [category]
 
 
-def test_get_posts_in_category(db, storage):
+def test_get_posts_in_category(storage):
     category = models.Category(name='Category', slug='c')
     post = models.Post(
         title="In Category", slug="ic", summary='', md_content='m',
@@ -104,9 +104,9 @@ def test_get_posts_in_category(db, storage):
         title="Out of Category", slug="ooc", summary='', md_content='m',
         html_content='h', published_date=date(2017, 3, 12),
         category=models.Category(name='Other category', slug='oc'))
-    db.session.add(post)
-    db.session.add(other_post)
-    db.session.commit()
+    storage.session.add(post)
+    storage.session.add(other_post)
+    storage.session.commit()
 
     assert storage.get_posts_in_category(category.id) == [post]
 

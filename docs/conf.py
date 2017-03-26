@@ -39,6 +39,12 @@ extensions = [
     'sphinxcontrib.programoutput',
 ]
 
+autoclass_content = 'both'
+
+nitpick_ignore = [
+    ('py:exc', 'NoResultFound'),
+]
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -158,6 +164,3 @@ texinfo_documents = [
      author, 'P-Blog', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-
-

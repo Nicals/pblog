@@ -2,12 +2,12 @@ from unittest.mock import patch, Mock
 
 import itsdangerous
 
-from pblog.api import resources
+from flask_pblog import resources
 
 
-@patch('pblog.api.resources.reqparse.RequestParser')
+@patch('flask_pblog.resources.reqparse.RequestParser')
 class TestAuthRequired:
-    @patch('pblog.api.resources.security')
+    @patch('flask_pblog.resources.security')
     def test_correct_key_allows_resource_access(self, security_patch, RequestParser, app):
         security_patch.validate_token.return_value = True
         view = Mock()
@@ -28,7 +28,7 @@ class TestAuthRequired:
         assert status_code == 401
         assert response == {'message': 'invalid_token'}
 
-    @patch('pblog.api.resources.security')
+    @patch('flask_pblog.resources.security')
     def test_expired_signature(self, security_patch, RequestParser, app):
         security_patch.validate_token.side_effect = itsdangerous.SignatureExpired('expired')
         view = Mock()

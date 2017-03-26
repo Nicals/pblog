@@ -40,7 +40,7 @@ setup(
         'Flask-RESTful==0.3.5',
         'PyYAML==3.12',
         'Cerberus==1.1',
-        'marshmallow-sqlalchemy==0.12.1',
+        'marshmallow==2.13.0',
         'Flask-Script==2.0.5',
         'markdown-extra==0.2.0',
         'python-slugify==1.2.1',

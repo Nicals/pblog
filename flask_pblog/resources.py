@@ -40,10 +40,9 @@ import itsdangerous
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.datastructures import FileStorage
 
-from flask_pblog.models import Post
 from flask_pblog import security
 from flask_pblog.schemas import PostSchema
-from pblog.markdown import PostError
+from pblog.markdown import parse_markdown, PostError
 
 
 blueprint = Blueprint('api', __name__)
@@ -154,12 +153,16 @@ class PostListResource(Resource):
         stored in an "errors" dictionary.
         """
         parser = build_edit_post_parser()
+        storage = current_app.extensions['pblog'].storage
+        md = current_app.extensions['pblog'].markdown
         args = parser.parse_args()
 
         try:
-            post = current_app.storage.create_post(args.post, args.encoding)
+            post_definition = parse_markdown(args.post, args.encoding, md=md)
         except PostError as e:
             return dict(errors=e.errors), 400
+
+        post = storage.create_post(post_definition)
 
         post_schema = PostSchema()
         return post_schema.dump(post).data, 201
@@ -178,8 +181,11 @@ class PostResource(Resource):
 
         A 404 will be returned if the updated post does not exist.
         """
+        storage = current_app.extensions['pblog'].storage
+        md = current_app.extensions['pblog'].markdown
+
         try:
-            post = Post.query.filter_by(id=post_id).one()
+            post = storage.get_post(post_id)
         except NoResultFound:
             return {'post': ["The post with id {} does not exist".format(post_id)]}, 404
 
@@ -187,9 +193,11 @@ class PostResource(Resource):
         args = parser.parse_args()
 
         try:
-            current_app.storage.update_post(post, args.post, args.encoding)
+            post_definition = parse_markdown(args.post, args.encoding, md=md)
         except PostError as e:
             return dict(errors=e.errors), 400
+
+        storage.update_post(post, post_definition)
 
         post_schema = PostSchema()
         return post_schema.dump(post).data

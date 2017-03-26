@@ -5,13 +5,12 @@ from sqlalchemy.orm.exc import NoResultFound
 from slugify import slugify
 
 from flask_pblog.models import Category, Post
-from pblog.markdown import parse_markdown
 
 
 class Storage:
     """This class implements database access through SQLAlchemy
     """
-    def __init__(self, session, markdown=None):
+    def __init__(self, session):
         """
         Args:
             session (sqlalchemy.orm.session.Session): session to use to
@@ -20,7 +19,6 @@ class Storage:
                 convert posts.
         """
         self.session = session
-        self.markdown = markdown
 
     def get_or_create_category(self, name):
         """Try to retrieve a category by its name.
@@ -39,7 +37,7 @@ class Storage:
         except NoResultFound:
             return Category(name=name, slug=slugify(name))
 
-    def create_post(self, md_file, encoding='utf-8'):
+    def create_post(self, post_definition):
         """Creates a new post from a markdown file and saves it in the database.
 
         Args:
@@ -52,8 +50,6 @@ class Storage:
         Raises:
             pblog.markdown.PostError: If any of the data fails to validate
         """
-        post_definition = parse_markdown(md_file, encoding, self.markdown)
-
         post = Post(
             title=post_definition.title,
             slug=post_definition.slug,
@@ -68,7 +64,7 @@ class Storage:
 
         return post
 
-    def update_post(self, post, md_file, encoding='utf-8'):
+    def update_post(self, post, post_definition):
         """Updates a post from a markdown file and saves it in the database.
 
         Ags:
@@ -79,8 +75,6 @@ class Storage:
         Raises:
             pblog.markdown.PostError: If any data fails to validate.
         """
-        post_definition = parse_markdown(md_file, encoding, self.markdown)
-
         post.title = post_definition.title
         post.slug = post_definition.slug
         post.published_date = post_definition.date

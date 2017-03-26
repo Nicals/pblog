@@ -13,6 +13,7 @@ from flask_pblog import PBlog
 def app():
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = 'sqlite://'
     app.config['TESTING'] = True
     db = SQLAlchemy(app)
     storage = Storage(db.session)

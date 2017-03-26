@@ -22,19 +22,23 @@ class PBlog:
         >>> pblog = PBlog()
         >>> pblog.init_app(app)
     """
-    def __init__(self, app=None, storage=None):
+    def __init__(self, app=None, storage=None, markdown=None):
         self.app = app
         self.storage = storage
+        self.markdown = markdown
 
         if app is not None and self.storage is not None:
             self.init_app(app)
 
-    def init_app(self, app, storage=None):
+    def init_app(self, app, storage=None, markdown=None):
         self.app = app
         self.storage = storage or self.storage
-        from flask_pblog.views import blueprint
-        blueprint.template_folder = app.config.get('PBLOG_TEMPLATE_FOLDER', 'templates')
-        app.register_blueprint(blueprint)
+        self.markdown = markdown or self.markdown
+        from flask_pblog.views import blueprint as blog_bp
+        from flask_pblog.resources import blueprint as resource_bp
+        blog_bp.template_folder = app.config.get('PBLOG_TEMPLATE_FOLDER', 'templates')
+        app.register_blueprint(blog_bp)
+        app.register_blueprint(resource_bp, url_prefix='/api')
 
         if not hasattr(app, 'extensions'):
             app.extensions = {}

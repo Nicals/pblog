@@ -1,5 +1,4 @@
 from datetime import date
-from unittest.mock import Mock, patch
 
 import pytest
 from sqlalchemy.orm.exc import NoResultFound
@@ -16,16 +15,13 @@ def test_create_category_if_not_existing(storage):
     assert category.slug == 'category'
 
 
-@patch('flask_pblog.storage.parse_markdown')
-def test_create_post(parse_markdown, storage):
-    md_file = Mock()
-    parse_markdown.return_value = PostDefinition(
+def test_create_post(storage):
+    post_definition = PostDefinition(
         id=None, title='Title', slug='slug', summary='summary', date=date(2017, 3, 12),
         category='Category', markdown='markdown', html='html')
 
-    post = storage.create_post(md_file, encoding='iso-8859-1')
+    post = storage.create_post(post_definition)
 
-    parse_markdown.assert_called_once_with(md_file, 'iso-8859-1', None)
     assert post.title == 'Title'
     assert post.slug == 'slug'
     assert post.summary == 'summary'
@@ -35,10 +31,8 @@ def test_create_post(parse_markdown, storage):
     assert post.html_content == 'html'
 
 
-@patch('flask_pblog.storage.parse_markdown')
-def test_update_post(parse_markdown, storage):
-    md_file = Mock()
-    parse_markdown.return_value = PostDefinition(
+def test_update_post(storage):
+    post_definition = PostDefinition(
         id=2, title='Title', slug='slug', summary='summary',
         date=date(2017, 3, 12), category='Category',
         markdown='markdown', html='html')
@@ -50,9 +44,8 @@ def test_update_post(parse_markdown, storage):
     storage.session.add(post)
     storage.session.commit()
 
-    storage.update_post(post, md_file, 'iso-8859-1')
+    storage.update_post(post, post_definition)
 
-    parse_markdown.assert_called_once_with(md_file, 'iso-8859-1', None)
     new_post = storage.session.query(models.Post).filter_by(id=post.id).one()
     assert new_post.title == 'Title'
     assert new_post.slug == 'slug'

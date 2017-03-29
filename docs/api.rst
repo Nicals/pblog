@@ -4,16 +4,20 @@ API
 Pblog
 -----
 
-Markdown
-~~~~~~~~
+Package
+~~~~~~~
 
-.. automodule:: pblog.markdown
+.. automodule:: pblog.package
 
-   .. autoclass:: PostError
+   .. autofunction:: read_package
 
-   .. autofunction:: update_meta
+   .. autofunction:: build_package
 
-   .. autofunction:: parse_markdown
+   .. autoclass:: Package
+
+   .. autoclass:: PackageException
+
+   .. autofunction:: PackageValidationError
 
 
 Pblog extension

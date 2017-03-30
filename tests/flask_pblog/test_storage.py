@@ -118,5 +118,5 @@ def test_category_without_posts(storage):
         storage.get_category(category.id)
 
 
-def test_get_cateogyr(storage, post):
+def test_get_category(storage, post):
     assert storage.get_category(post.category.id) == post.category

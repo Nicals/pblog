@@ -1,5 +1,7 @@
+from datetime import date
 from io import BytesIO
 import tarfile
+from unittest.mock import patch
 import yaml
 
 import pytest
@@ -167,3 +169,15 @@ foo: bar
 
     assert 'title' in excinfo.value.errors
     assert 'category' in excinfo.value.errors
+
+
+@patch('pblog.package.date')
+def test_package_sets_default_values(patch_date):
+    patch_date.today.return_value = date(2017, 3, 30)
+    pack = package.Package("A title", "A category", "Some markdown", "summary")
+
+    pack.set_default_values()
+
+    assert pack.post_slug == 'a-title'
+    assert patch_date.today.called
+    assert pack.published_date == date(2017, 3, 30)

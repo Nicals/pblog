@@ -15,12 +15,14 @@ This file provides general metadata about file structure:
 """
 
 from io import IOBase, BytesIO
+from datetime import date
 import pathlib
 import tarfile
 import yaml
 
 import cerberus
 from markdown import Markdown
+from slugify import slugify
 
 
 __all__ = [
@@ -251,9 +253,9 @@ class Package:
         markdown_content (string):
         html_content (string):
     """
-    def __init__(self, post_encoding='utf-8', post_id=None, post_title=None,
-                 post_slug=None, category_name=None, published_date=None,
-                 summary=None, markdown_content=None, html_content=None):
+    def __init__(self, post_title, category_name, markdown_content,
+                 summary, post_encoding='utf-8', post_id=None, post_slug=None,
+                 published_date=None, html_content=None):
         self.post_encoding = post_encoding
         self.post_id = post_id
         self.post_title = post_title
@@ -263,3 +265,15 @@ class Package:
         self.summary = summary
         self.markdown_content = markdown_content
         self.html_content = html_content
+
+    def set_default_values(self):
+        """Sets missing values in the post.
+
+        If ``post_slug`` is None, it will be generated from ``post_title``.
+        If ``published_date`` is None, it will be set to the current date.
+        """
+        if self.post_slug is None:
+            self.post_slug = slugify(self.post_title)
+
+        if self.published_date is None:
+            self.published_date = date.today()

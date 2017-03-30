@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 from sqlalchemy.orm.exc import NoResultFound
 
-from pblog.markdown import PostDefinition
+from pblog.package import Package
 from flask_pblog import models
 
 
@@ -16,9 +16,11 @@ def test_create_category_if_not_existing(storage):
 
 
 def test_create_post(storage):
-    post_definition = PostDefinition(
-        id=None, title='Title', slug='slug', summary='summary', date=date(2017, 3, 12),
-        category='Category', markdown='markdown', html='html')
+    post_definition = Package(
+        post_title='Title', post_slug='slug', summary='summary',
+        published_date=date(2017, 3, 12),
+        category_name='Category', markdown_content='markdown',
+        html_content='html')
 
     post = storage.create_post(post_definition)
 
@@ -32,10 +34,10 @@ def test_create_post(storage):
 
 
 def test_update_post(storage):
-    post_definition = PostDefinition(
-        id=2, title='Title', slug='slug', summary='summary',
-        date=date(2017, 3, 12), category='Category',
-        markdown='markdown', html='html')
+    post_definition = Package(
+        post_id=2, post_title='Title', post_slug='slug', summary='summary',
+        published_date=date(2017, 3, 12), category_name='Category',
+        markdown_content='markdown', html_content='html')
     post = models.Post(
         title='old', slug='old', summary='summary',
         published_date=date(2010, 1, 2),

@@ -4,8 +4,8 @@ import pathlib
 
 import click
 
-from pblog import markdown
 from pblog.client import AuthenticationError, Client
+from pblog.package import build_package, PackageException, PackageValidationError
 
 
 Environment = namedtuple('Environment', ('name', 'url', 'username'))
@@ -96,13 +96,15 @@ def publish(ctx, post_path, encoding, password):
     # parse post and report errors if any
     try:
         with post_path.open('rb') as post_file:
-            post = markdown.parse_markdown(post_file, encoding='utf-8')
-    except markdown.PostError as e:
+            post = build_package(post_file, encoding='utf-8')
+    except PackageValidationError as e:
         click.echo(str(e), err=True)
         for field, errors in e.errors.items():
             for error in errors:
                 click.echo('%s: %s' % (field, error), err=True)
         raise click.ClickException('aborting')
+    except PackageException as e:
+        raise click.ClickException(str(e))
 
     if post.id.get(env.name) is None:
         result_post = client.create_post(post_path, encoding)
@@ -116,7 +118,3 @@ def publish(ctx, post_path, encoding, password):
         url=env.url,
         id=result_post['id'],
         slug=result_post['slug']))
-    markdown.update_meta(
-        post_path.open('r+b'),
-        {'id': post.id, 'date': result_post['published_date']},
-        encoding)

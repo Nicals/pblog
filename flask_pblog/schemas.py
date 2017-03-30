@@ -5,12 +5,12 @@ from marshmallow import Schema, fields
 
 
 class CategorySchema(Schema):
-    id = fields.Number()
+    id = fields.Integer()
     name = fields.String()
 
 
 class PostSchema(Schema):
-    id = fields.Number()
+    id = fields.Integer()
     title = fields.String()
     slug = fields.String()
     category = fields.Nested(CategorySchema)

@@ -221,12 +221,16 @@ def build_package(post_path, package_path, encoding='utf-8'):
         package_path (pathlib.Path or file object): path to the package to
             create, or file-like object to write the package into.
         encoding (str): encoding of the markdown post file
+
+    Returns:
+        package.Package: Information about the generated package
     """
     parser = build_markdown_parser()
     with post_path.open(encoding=encoding) as post_file:
-        parser.convert(post_file.read())
+        markdown_content = post_file.read()
+    parser.convert(markdown_content)
 
-    normalize_post_meta(parser.meta)
+    post_meta = normalize_post_meta(parser.meta)
     package_meta = yaml.dump(dict(post=post_path.name, encoding=encoding)).encode()
 
     tar_kwargs = dict(mode='w')
@@ -249,19 +253,30 @@ def build_package(post_path, package_path, encoding='utf-8'):
         # write post
         tar.add(str(post_path), arcname=post_path.name)
 
+    return Package(
+        post_title=post_meta['title'],
+        category_name=post_meta['category'],
+        markdown_content=markdown_content,
+        summary=parser.summary,
+        post_encoding=encoding,
+        post_id=post_meta['id'],
+        post_slug=post_meta['slug'],
+        published_date=post_meta['published_date'],
+    )
+
 
 class Package:
     """Holds package information.
 
     Attributes:
-        file_encoding (string): encoding of the markdown post
-        post_id (dict):
         post_title (string):
-        post_slug (string):
         category_name (string):
-        published_date (date):
-        summary (string):
         markdown_content (string):
+        summary (string):
+        post_encoding (string): encoding of the markdown post
+        post_id (dict):
+        post_slug (string):
+        published_date (date):
         html_content (string):
     """
     def __init__(self, post_title, category_name, markdown_content,

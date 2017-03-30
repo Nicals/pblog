@@ -94,9 +94,9 @@ def publish(ctx, post_path, encoding, password):
         raise click.ClickException("authentication failed")
 
     # parse post and report errors if any
+    package_path = post_path.parent / (post_path.stem + '.tar.gz')
     try:
-        with post_path.open('rb') as post_file:
-            post = build_package(post_file, encoding='utf-8')
+        package = build_package(post_path, package_path, encoding=encoding)
     except PackageValidationError as e:
         click.echo(str(e), err=True)
         for field, errors in e.errors.items():
@@ -106,12 +106,12 @@ def publish(ctx, post_path, encoding, password):
     except PackageException as e:
         raise click.ClickException(str(e))
 
-    if post.id.get(env.name) is None:
-        result_post = client.create_post(post_path, encoding)
+    if package.post_id.get(env.name) is None:
+        result_post = client.create_post(package_path)
         click.echo('post %s successfully created' % result_post['id'])
-        post.id[env.name] = result_post['id']
+        package.post_id[env.name] = result_post['id']
     else:
-        result_post = client.update_post(post.id[env.name], post_path, encoding)
+        result_post = client.update_post(package.post_id[env.name], package_path)
         click.echo('post %s successfully updated' % result_post['id'])
 
     click.echo('url: {url}/post/{id}/{slug}'.format(

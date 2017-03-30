@@ -17,9 +17,22 @@ class AuthenticationError(ClientException):
 
 
 class UnexpectedResponse(ClientException):
-    def _init__(self, expected_status, received_status):
+    def __init__(self, expected_status, received_status):
         super().__init__("Expecing %s response, but got %s" % (
             expected_status, received_status))
+
+
+class ResponseContentError(ClientException):
+    """Raised when the content of the response do not have the expected
+    format"""
+    def __init__(self, message, errors=None, content=None):
+        """
+        Args:
+            message (str): general description of the error
+            errors (dict): validation errors
+        """
+        super().__init__(message)
+        self.errors = errors
 
 
 class Client:
@@ -58,7 +71,9 @@ class Client:
         })
 
         if not validator.validate(post):
-            raise Client(validator.errors)
+            raise ResponseContentError(
+                "Response from server did not validate %s" % post,
+                errors=validator.errors)
 
         return validator.normalized(post)
 
@@ -77,31 +92,27 @@ class Client:
         content = self._read_response(response, [200])
         self.session.headers[AUTH_HEADER] = content['token']
 
-    def create_post(self, post_path, encoding):
+    def create_post(self, package_path):
         """
         Args:
-            post_file (pathlib.Path):
-            encoding (str): encoding of the post file
+            package_path (pathlib.Path): path to the package to send
 
         Returns:
             dict: The api response
         """
         response = self.session.post(
             '{}/posts'.format(self.api_root),
-            data={
-                'encoding': encoding,
-            },
             files={
-                'post': (post_path.name, post_path.open(), 'text/markdown'),
+                'post': (package_path.name, package_path.open(), 'application/tar+gzip'),
             })
 
         return self.normalize_post(self._read_response(response, [201]))
 
-    def update_post(self, post_id, post_path, encoding):
+    def update_post(self, post_id, package_path):
         """
         Args:
             post_id (integer): id of the post to update
-            post_path (pathlib.Path):
+            package_path(pathlib.Path):
             encoding (str):
 
         Returns:
@@ -109,11 +120,8 @@ class Client:
         """
         response = self.session.post(
             '{}/posts/{}'.format(self.api_root, post_id),
-            data={
-                'encoding': encoding,
-            },
             files={
-                'post': (post_path.name, post_path.open(), 'text/markdown'),
+                'post': (package_path.name, package_path.open(), 'application/tar+gzip'),
             })
 
         return self.normalize_post(self._read_response(response, [200]))

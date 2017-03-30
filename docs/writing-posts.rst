@@ -5,19 +5,20 @@ Posts are written in `markdown <https://daringfireball.net/projects/markdown/>`_
 
 Some metadata are required to configure some post.
 
-======== ======= ==============================================================
 
-id       dict    a dctionary mapping environment names to actual post id in
-                 the web interface. Not required for new post.
-title    string  the title of this post. Required.
-slug     string  a slug to use for this post. It is not required to be a unique
-                 value. Not required.
-category string  name of the category for this post. If not already existing,
-                 a new category will be created in the web interface. Required.
-date     date    yyyy-mm-dd. If not set, the current date will be set to
-                 the current date.
+============== ======= ==============================================================
 
-======== ======= ==============================================================
+id             dict    a dctionary mapping environment names to actual post id in
+                       the web interface. Not required for new post.
+title          string  the title of this post. Required.
+slug           string  a slug to use for this post. It is not required to be a unique
+                       value. Not required.
+category       string  name of the category for this post. If not already existing,
+                       a new category will be created in the web interface. Required.
+published_date date    yyyy-mm-dd. If not set, the current date will be set to
+                       the current date.
+
+============== ======= ==============================================================
 
 A ``[summary]`` tag can be placed on top of a paragraph to use it for displaying
 the post on the front page.

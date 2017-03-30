@@ -143,13 +143,20 @@ def test_build_package(temp_dir):
     with post_path.open('w', encoding='iso-8859-1') as post_file:
         post_file.write(SAMPLE_MARKDOWN)
 
-    package.build_package(post_path, package_file, encoding='iso-8859-1')
+    built_package = package.build_package(post_path, package_file, encoding='iso-8859-1')
     package_file.seek(0)
 
     with tarfile.open(mode='r', fileobj=package_file) as tar:
         meta_content = yaml.load(tar.extractfile('package.yml').read().decode())
         assert meta_content == {'encoding': 'iso-8859-1', 'post': 'post.md'}
         assert tar.extractfile('post.md').read().decode('iso-8859-1') == SAMPLE_MARKDOWN
+
+    assert built_package.post_id == {}
+    assert built_package.post_title == "This is a title"
+    assert built_package.post_slug is None
+    assert built_package.published_date is None
+    assert built_package.category_name == "A category"
+    assert built_package.markdown_content == SAMPLE_MARKDOWN
 
 
 def test_build_package_writes_on_disc(temp_dir):

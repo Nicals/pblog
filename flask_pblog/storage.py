@@ -62,7 +62,7 @@ class Storage:
     def update_post(self, post, post_package):
         """Updates a post from a markdown file and saves it in the database.
 
-        Ags:
+        Args:
             post (flask_pblog.models.Post): The post to update
             md_package (pblog.package.Package): Post package definition to
                 update post from.

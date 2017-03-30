@@ -199,3 +199,34 @@ def test_package_sets_default_values(patch_date):
     assert pack.post_slug == 'a-title'
     assert patch_date.today.called
     assert pack.published_date == date(2017, 3, 30)
+
+
+def test_package_update_post_meta():
+    pack = package.Package(
+        post_title="A title", category_name="A category",
+        markdown_content=SAMPLE_MARKDOWN, summary="Foo")
+
+    assert pack.update_post_meta(
+        post_slug='a-title',
+        published_date=date(2017, 3, 30),
+        post_id={'foo': 12}) is True
+    assert pack.post_slug == 'a-title'
+    assert pack.published_date == date(2017, 3, 30)
+    assert pack.post_id == {'foo': 12}
+
+    parser = package.build_markdown_parser()
+    parser.convert(pack.markdown_content)
+    assert parser.meta['slug'] == 'a-title'
+    assert parser.meta['published_date'] == date(2017, 3, 30)
+    assert parser.meta['id'] == {'foo': 12}
+
+
+def test_package_warns_if_no_meta_to_update():
+    pack = package.Package(
+        post_title="A title", category_name="A category",
+        markdown_content="", post_slug="slug", summary="Foo",
+        published_date=date(2017, 3, 30), post_id={'foo': 12})
+
+    assert pack.update_post_meta(
+        post_id={'foo': 12},
+        post_slug='slug', published_date=date(2017, 3, 30)) is False

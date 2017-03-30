@@ -22,6 +22,7 @@ import yaml
 
 import cerberus
 from markdown import Markdown
+from markdown_extra.meta import inject_meta
 from slugify import slugify
 
 
@@ -280,7 +281,7 @@ class Package:
         html_content (string):
     """
     def __init__(self, post_title, category_name, markdown_content,
-                 summary, post_encoding='utf-8', post_id=None, post_slug=None,
+                 summary, post_encoding='utf-8', post_id={}, post_slug=None,
                  published_date=None, html_content=None):
         self.post_encoding = post_encoding
         self.post_id = post_id
@@ -303,3 +304,51 @@ class Package:
 
         if self.published_date is None:
             self.published_date = date.today()
+
+    def update_post_meta(self, post_id, post_slug, published_date):
+        """Update this instance attribute and reflect them in the markdown
+        metadata.
+
+        Args:
+            post_id (dict): a new id to insert in the existing id collection
+            post_slug (str):
+            published_date (date):
+
+        Returns:
+            bool: True if some attribute needed to be updated and the
+                markdown file was updated. False otherwise
+        """
+        need_update = False
+
+        for env_name, env_id in post_id.items():
+            if env_name in self.post_id:
+                if self.post_id[env_name] != env_id:
+                    need_update = True
+                    continue
+            else:
+                need_update = True
+                continue
+
+        if post_slug != self.post_slug:
+            need_update = True
+
+        if published_date != self.published_date:
+            need_update = True
+
+        if not need_update:
+            return False
+
+        self.post_id.update(post_id)
+        self.post_slug = post_slug
+        self.published_date = published_date
+
+        self.markdown_content = inject_meta(
+            self.markdown_content,
+            {
+                'id': self.post_id,
+                'slug': self.post_slug,
+                'published_date': self.published_date,
+            },
+            update=True)
+
+        return True

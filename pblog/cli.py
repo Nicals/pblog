@@ -58,7 +58,7 @@ def parse_env(env_file, env=None):
 def cli(ctx, ini, env):
     try:
         ini_path = pathlib.Path(ini).resolve()
-    except FileNotFoundError:  # NOQA pyflake don't recognize this
+    except FileNotFoundError:
         raise click.ClickException('%s file not found' % ini)
     if not ini_path.is_file():
         raise click.ClickException('%s is not a file' % ini_path)
@@ -113,6 +113,16 @@ def publish(ctx, post_path, encoding, password):
     else:
         result_post = client.update_post(package.post_id[env.name], package_path)
         click.echo('post %s successfully updated' % result_post['id'])
+
+    new_meta = dict(
+        post_id={env.name: result_post['id']},
+        post_slug=result_post['slug'],
+        published_date=result_post['published_date'],
+    )
+    if package.update_post_meta(**new_meta):
+        with post_path.open('wb') as post_file:
+            post_file.write(package.markdown_content.encode(encoding))
+        click.echo('post metadata updated')
 
     click.echo('url: {url}/post/{id}/{slug}'.format(
         url=env.url,

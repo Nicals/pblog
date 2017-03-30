@@ -42,7 +42,7 @@ from werkzeug.datastructures import FileStorage
 
 from flask_pblog import security
 from flask_pblog.schemas import PostSchema
-from pblog.markdown import parse_markdown, PostError
+from pblog.package import read_package, PackageException, PackageValidationError
 
 
 blueprint = Blueprint('api', __name__)
@@ -91,10 +91,6 @@ def auth_required(func):
 
 def build_edit_post_parser():
     parser = reqparse.RequestParser()
-    parser.add_argument(
-        'encoding',
-        default='utf-8',
-        help="Encoding of the markdown file content. Defaults to utfg-8")
     parser.add_argument(
         'post',
         type=FileStorage,
@@ -158,11 +154,14 @@ class PostListResource(Resource):
         args = parser.parse_args()
 
         try:
-            post_definition = parse_markdown(args.post, args.encoding, md=md)
-        except PostError as e:
+            post_package = read_package(args.post.stream, parser=md)
+        except PackageValidationError as e:
             return dict(errors=e.errors), 400
+        except PackageException as e:
+            return dict(errors={'__all__': [str(e)]})
 
-        post = storage.create_post(post_definition)
+        post_package.set_default_values()
+        post = storage.create_post(post_package)
 
         post_schema = PostSchema()
         return post_schema.dump(post).data, 201
@@ -193,11 +192,14 @@ class PostResource(Resource):
         args = parser.parse_args()
 
         try:
-            post_definition = parse_markdown(args.post, args.encoding, md=md)
-        except PostError as e:
+            post_package = read_package(args.post.stream, parser=md)
+        except PackageValidationError as e:
             return dict(errors=e.errors), 400
+        except PackageException as e:
+            return dict(errors={'__all__': [str(e)]})
 
-        storage.update_post(post, post_definition)
+        post_package.set_default_values()
+        storage.update_post(post, post_package)
 
         post_schema = PostSchema()
         return post_schema.dump(post).data

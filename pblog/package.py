@@ -167,18 +167,29 @@ def normalize_post_meta(post_meta):
     return validator.normalized(post_meta)
 
 
-def read_package(package_filepath, parser=None):
+def read_package(package_path, parser=None):
     """
     Args:
-        package_filepath (pathlib.Path): path to the package file to read
+        package_path (pathlib.Path or file oject): path to the package file
+            to read
         parser (markdown.Markdown): a markdown parser instance. If not
             given, a minimalistic parser will be used.
 
     Returns:
         pblog.package.Package: An instance containing extracted post data.
     """
+    tar_kwargs = dict(mode='r')
+    if isinstance(package_path, pathlib.Path):
+        tar_kwargs['name'] = str(package_path)
+    elif isinstance(package_path, IOBase):
+        tar_kwargs['fileobj'] = package_path
+    else:
+        raise ValueError(
+            "package_path should be pathlib.Path or file-object instance. "
+            "%s instead" % type(package_path))
+
     parser = build_markdown_parser(parser)
-    with tarfile.open(str(package_filepath), mode='r') as tar:
+    with tarfile.open(**tar_kwargs) as tar:
         package_meta = extract_package_meta(tar)
         post_member = package_meta['post']
         post_encoding = package_meta['encoding']
@@ -207,7 +218,7 @@ def build_package(post_path, package_path, encoding='utf-8'):
 
     Args:
         post_path (pathlib.Path): path to the markdown post
-        package_path (pathlib.Path or file-like): path to the package to
+        package_path (pathlib.Path or file object): path to the package to
             create, or file-like object to write the package into.
         encoding (str): encoding of the markdown post file
     """
@@ -225,7 +236,7 @@ def build_package(post_path, package_path, encoding='utf-8'):
         tar_kwargs['fileobj'] = package_path
     else:
         raise ValueError(
-            "package_path should be a pathlib.Path or fil-object instance. "
+            "package_path should be a pathlib.Path or file-object instance. "
             "%s instead" % type(package_path))
 
     with tarfile.open(**tar_kwargs) as tar:

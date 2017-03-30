@@ -15,8 +15,6 @@ class Storage:
         Args:
             session (sqlalchemy.orm.session.Session): session to use to
                 access the database
-            markdown (markdown.Markdown): the markdown instance to use to
-                convert posts.
         """
         self.session = session
 
@@ -37,51 +35,48 @@ class Storage:
         except NoResultFound:
             return Category(name=name, slug=slugify(name))
 
-    def create_post(self, post_definition):
+    def create_post(self, post_package):
         """Creates a new post from a markdown file and saves it in the database.
 
         Args:
-            md_file (file): The file to build a new post from
-            encoding (str): The encoding used in the markdown file.
+            post_package (pblog.package.Package): Post package definition
+                to build a new post from.
 
         Returns:
             flask_pblog.models.Post: The created post.
-
-        Raises:
-            pblog.markdown.PostError: If any of the data fails to validate
         """
         post = Post(
-            title=post_definition.title,
-            slug=post_definition.slug,
-            published_date=post_definition.date,
-            summary=post_definition.summary,
-            category=self.get_or_create_category(post_definition.category),
-            md_content=post_definition.markdown,
-            html_content=post_definition.html)
+            title=post_package.post_title,
+            slug=post_package.post_slug,
+            published_date=post_package.published_date,
+            summary=post_package.summary,
+            category=self.get_or_create_category(post_package.category_name),
+            md_content=post_package.markdown_content,
+            html_content=post_package.html_content)
 
         self.session.add(post)
         self.session.commit()
 
         return post
 
-    def update_post(self, post, post_definition):
+    def update_post(self, post, post_package):
         """Updates a post from a markdown file and saves it in the database.
 
         Ags:
             post (flask_pblog.models.Post): The post to update
-            md_file (file): The markdown file to update the post from
-            encoding (str): The encoding used in the file
+            md_package (pblog.package.Package): Post package definition to
+                update post from.
 
         Raises:
             pblog.markdown.PostError: If any data fails to validate.
         """
-        post.title = post_definition.title
-        post.slug = post_definition.slug
-        post.published_date = post_definition.date
-        post.summary = post_definition.summary
-        post.category = self.get_or_create_category(post_definition.category)
-        post.md_content = post_definition.markdown
-        post.html_content = post_definition.html
+        post.title = post_package.post_title
+        post.slug = post_package.post_slug
+        post.published_date = post_package.published_date
+        post.summary = post_package.summary
+        post.category = self.get_or_create_category(post_package.category_name)
+        post.md_content = post_package.markdown_content
+        post.html_content = post_package.html_content
 
         self.session.add(post)
         self.session.commit()

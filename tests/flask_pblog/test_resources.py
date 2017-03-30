@@ -1,4 +1,3 @@
-from io import BytesIO
 import json
 from unittest.mock import patch, Mock
 
@@ -56,48 +55,30 @@ class TestAuthRequired:
 
 class TestPostListResource:
     @patch('flask_pblog.security.validate_token')
-    def test_creates_new_post(self, validate_token, client, storage):
-        md_content = BytesIO("""---
-title: foo
-category: bar
----
-
-Some Content
-""".encode())
-
+    def test_creates_new_post(self, validate_token, client, storage, post_package):
         response = client.post(
             '/api/posts',
             headers={'X-Pblog-Token': 'ham'},
             data={
-                'encoding': 'utf-8',
-                'post': (md_content, 'post.md'),
+                'post': (post_package, 'post.tar.gz'),
             })
 
         assert response.status_code == 201
         json_response = json.loads(response.data.decode())
-        assert storage.get_post(json_response['id']).title == 'foo'
+        assert storage.get_post(json_response['id']).title == 'A title'
 
 
 class TestPostResource:
     @patch('flask_pblog.security.validate_token')
-    def test_updates_post(self, validate_token, client, storage, post):
-        md_content = BytesIO("""---
-title: new title
-category: bar
----
-
-Some content.
-""".format(post.id).encode())
-
+    def test_updates_post(self, validate_token, client, storage, post, post_package):
         response = client.post(
             '/api/posts/%d' % post.id,
             headers={'X-Pblog-Token': 'ham'},
             data={
-                'encoding': 'utf-8',
-                'post': (md_content, 'post.md'),
+                'post': (post_package, 'post.md'),
             })
 
         assert response.status_code == 200
         json_response = json.loads(response.data.decode())
         assert json_response['id'] == post.id
-        assert storage.get_post(post.id).title == 'new title'
+        assert storage.get_post(post.id).title == 'A title'

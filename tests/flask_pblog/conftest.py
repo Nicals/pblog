@@ -1,4 +1,6 @@
 from datetime import date
+from io import BytesIO
+import tarfile
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -48,3 +50,34 @@ def post(storage):
     storage.session.commit()
 
     return post
+
+
+@pytest.fixture(scope='function')
+def post_package():
+    """This fixture provides a packaged post
+    """
+    package_file = BytesIO()
+    with tarfile.open(mode='w', fileobj=package_file) as tar:
+        # metadata
+        meta_content = b'encoding: utf-8\npost: post.md'
+        file_info = tarfile.TarInfo('package.yml')
+        file_info.size = len(meta_content)
+        tar.addfile(file_info, BytesIO(meta_content))
+
+        # post
+        post_content = b'''---
+title: A title
+category: A category
+---
+
+[summary]
+A summary
+
+A paragraph
+'''
+        file_info = tarfile.TarInfo('post.md')
+        file_info.size = len(post_content)
+        tar.addfile(file_info, BytesIO(post_content))
+    package_file.seek(0)
+
+    return package_file

@@ -126,6 +126,17 @@ def test_read_package(temp_dir):
     assert package_info.html_content == SAMPLE_HTML
 
 
+def test_read_package_from_file():
+    package_file = build_tar_file([
+        ('package.yml', b"encoding: iso-8859-1\npost: post.md"),
+        ('post.md', SAMPLE_MARKDOWN.encode('iso-8859-1')),
+    ])
+
+    package_info = package.read_package(package_file)
+
+    assert package_info.post_title == "This is a title"
+
+
 def test_build_package(temp_dir):
     post_path = temp_dir / "post.md"
     package_file = BytesIO()

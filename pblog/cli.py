@@ -82,7 +82,7 @@ def publish(ctx, post_path, encoding, password):
     env = ctx.obj['env']
     try:
         post_path = pathlib.Path(post_path).resolve()
-    except FileNotFoundError:  # NOQA
+    except FileNotFoundError:
         raise click.ClickException('%s file not found' % post_path)
     if not post_path.is_file():
         raise click.ClickException('%s is not a file' % post_path)

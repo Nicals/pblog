@@ -40,11 +40,13 @@ setup(
         'PyYAML==3.12',
         'Cerberus==1.1',
         'marshmallow==2.13.0',
-        'Flask-Script==2.0.5',
         'markdown-extra==0.2.0',
         'python-slugify==1.2.1',
-        'Flask-Migrate==2.0.3',
         'requests==2.13.0',
         'click==6.7',
     ],
+    extras_require={
+        'docs': ['Sphinx', 'sphinxcontrib-programoutput'],
+        'tests': ['pytest', 'blinker'],
+    },
 )

@@ -123,7 +123,6 @@ def test_read_package(temp_dir):
     assert package_info.published_date is None
     assert package_info.summary == "Let's have a summary"
     assert package_info.markdown_content == SAMPLE_MARKDOWN
-    assert package_info.html_content == SAMPLE_HTML
 
 
 def test_read_package_from_file():
@@ -214,8 +213,8 @@ def test_package_update_post_meta():
     assert pack.published_date == date(2017, 3, 30)
     assert pack.post_id == {'foo': 12}
 
-    parser = package.build_markdown_parser()
-    parser.convert(pack.markdown_content)
+    parser = package.markdown_parser
+    package.markdown_parser.convert(pack.markdown_content)
     assert parser.meta['slug'] == 'a-title'
     assert parser.meta['published_date'] == date(2017, 3, 30)
     assert parser.meta['id'] == {'foo': 12}

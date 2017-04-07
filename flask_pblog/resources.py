@@ -154,13 +154,14 @@ class PostListResource(Resource):
         args = parser.parse_args()
 
         try:
-            post_package = read_package(args.post.stream, parser=md)
+            post_package = read_package(args.post.stream)
         except PackageValidationError as e:
             return dict(errors=e.errors), 400
         except PackageException as e:
             return dict(errors={'__all__': [str(e)]})
 
         post_package.set_default_values()
+        post_package.build_html_content(md)
         post = storage.create_post(post_package)
 
         post_schema = PostSchema()
@@ -192,13 +193,14 @@ class PostResource(Resource):
         args = parser.parse_args()
 
         try:
-            post_package = read_package(args.post.stream, parser=md)
+            post_package = read_package(args.post.stream)
         except PackageValidationError as e:
             return dict(errors=e.errors), 400
         except PackageException as e:
             return dict(errors={'__all__': [str(e)]})
 
         post_package.set_default_values()
+        post_package.build_html_content(md)
         storage.update_post(post, post_package)
 
         post_schema = PostSchema()

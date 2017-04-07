@@ -4,6 +4,7 @@ import tarfile
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from markdown import Markdown
 import pytest
 
 from flask_pblog.models import Base, Post, Category
@@ -18,8 +19,9 @@ def app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = 'sqlite://'
     app.config['TESTING'] = True
     db = SQLAlchemy(app)
+    markdown = Markdown()
     storage = Storage(db.session)
-    PBlog(app, storage=storage)
+    PBlog(app, storage=storage, markdown=markdown)
 
     Base.metadata.create_all(db.engine)
     with app.app_context():

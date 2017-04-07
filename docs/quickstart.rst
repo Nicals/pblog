@@ -16,6 +16,11 @@ This extensions must be provided with a :class:`~flask_pblog.storage.Storage` in
 The storage provided with Pblog uses SQLAlchemy, so you should provide it with
 a session instance.
 
+It should also be given a `markdown.Markdown` instance that will be
+used to convert markdown post into proper HTML.
+This instance must have at least the `markdown_extra.meta.MetaExtension`
+and `markdown_extra.summary.SummaryExtension` enabled.
+
 .. code:: python
 
    import os
@@ -25,6 +30,7 @@ a session instance.
    import flask_pblog
    from flask_pblog import PBlog
    from flask_pblog.storage import Storage
+   from markdown import Markdown
 
    static_folder = os.path.join(
        os.path.dirname(flask_pblog.__file__), 'static')
@@ -39,7 +45,8 @@ a session instance.
        'admin': 'pbkdf2:.....',
    }
    db = SQLAlchemy(app)
-   PBlog(app, storage=Storage(db.session)
+   md = Markdown(extensions=['markdown_extra.meta', 'markdown_extra.summary'])
+   PBlog(app, storage=Storage(markdown=db.session, markdown=md)
 
    app.run()
 

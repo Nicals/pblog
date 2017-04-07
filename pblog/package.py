@@ -22,7 +22,8 @@ import yaml
 
 import cerberus
 from markdown import Markdown
-from markdown_extra.meta import inject_meta
+from markdown_extra.meta import MetaExtension, inject_meta
+from markdown_extra.summary import SummaryExtension
 from slugify import slugify
 
 
@@ -56,32 +57,12 @@ class PackageValidationError(PackageException):
         self.errors = errors
 
 
-def build_markdown_parser(parser=None):
-    """Builds or add required extensions to a markdow parser
-    instance to process posts.
-
-    Args:
-        parser (markdow.Markdown): If given, all required extensions for
-            post packaging will be added to this parser instance.
-
-    Returns:
-        markdown.Markdown: A ready to use markdown parser instance.
-    """
-    required_extensions = [
-        'markdown_extra.summary',
-        'markdown_extra.meta',
-    ]
-
-    if parser is None:
-        parser = Markdown()
-
-    for extension_name in required_extensions:
-        if extension_name not in parser.registeredExtensions:
-            parser.registerExtensions([extension_name], {})
-
-    parser.reset()
-
-    return parser
+markdown_parser = Markdown(
+    extensions=[
+        MetaExtension(),
+        SummaryExtension(),
+    ],
+)
 
 
 def extract_package_meta(tar):
@@ -168,7 +149,7 @@ def normalize_post_meta(post_meta):
     return validator.normalized(post_meta)
 
 
-def read_package(package_path, parser=None):
+def read_package(package_path):
     """
     Args:
         package_path (pathlib.Path or file oject): path to the package file
@@ -189,15 +170,14 @@ def read_package(package_path, parser=None):
             "package_path should be pathlib.Path or file-object instance. "
             "%s instead" % type(package_path))
 
-    parser = build_markdown_parser(parser)
     with tarfile.open(**tar_kwargs) as tar:
         package_meta = extract_package_meta(tar)
         post_member = package_meta['post']
         post_encoding = package_meta['encoding']
 
         post_md_content = tar.extractfile(post_member).read().decode(post_encoding)
-        post_html_content = parser.convert(post_md_content)
-        post_meta = normalize_post_meta(parser.meta)
+        markdown_parser.convert(post_md_content)
+        post_meta = normalize_post_meta(markdown_parser.meta)
 
         package_info = Package(
             post_encoding=post_encoding,
@@ -206,9 +186,8 @@ def read_package(package_path, parser=None):
             post_slug=post_meta['slug'],
             category_name=post_meta['category'],
             published_date=post_meta['published_date'],
-            summary=parser.summary,
+            summary=markdown_parser.summary,
             markdown_content=post_md_content,
-            html_content=post_html_content,
         )
 
         return package_info
@@ -226,12 +205,11 @@ def build_package(post_path, package_path, encoding='utf-8'):
     Returns:
         package.Package: Information about the generated package
     """
-    parser = build_markdown_parser()
     with post_path.open(encoding=encoding) as post_file:
         markdown_content = post_file.read()
-    parser.convert(markdown_content)
+    markdown_parser.convert(markdown_content)
 
-    post_meta = normalize_post_meta(parser.meta)
+    post_meta = normalize_post_meta(markdown_parser.meta)
     package_meta = yaml.dump(dict(post=post_path.name, encoding=encoding)).encode()
 
     tar_kwargs = dict(mode='w')
@@ -258,7 +236,7 @@ def build_package(post_path, package_path, encoding='utf-8'):
         post_title=post_meta['title'],
         category_name=post_meta['category'],
         markdown_content=markdown_content,
-        summary=parser.summary,
+        summary=markdown_parser.summary,
         post_encoding=encoding,
         post_id=post_meta['id'],
         post_slug=post_meta['slug'],
@@ -282,7 +260,7 @@ class Package:
     """
     def __init__(self, post_title, category_name, markdown_content,
                  summary, post_encoding='utf-8', post_id={}, post_slug=None,
-                 published_date=None, html_content=None):
+                 published_date=None):
         self.post_encoding = post_encoding
         self.post_id = post_id
         self.post_title = post_title
@@ -291,7 +269,23 @@ class Package:
         self.published_date = published_date
         self.summary = summary
         self.markdown_content = markdown_content
-        self.html_content = html_content
+        self._html_content = None
+
+    def build_html_content(self, parser):
+        """Build internal HTML content from markdown content
+
+        Args:
+            parser markdown(Markdown): The parser to use for markdown
+                conversion.
+        """
+        self._html_content = parser.convert(self.markdown_content)
+
+    @property
+    def html_content(self):
+        if self._html_content is None:
+            raise PackageException("html_content has not been generated")
+
+        return self._html_content
 
     def set_default_values(self):
         """Sets missing values in the post.

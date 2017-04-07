@@ -19,8 +19,8 @@ def test_create_post(storage):
     post_definition = Package(
         post_title='Title', post_slug='slug', summary='summary',
         published_date=date(2017, 3, 12),
-        category_name='Category', markdown_content='markdown',
-        html_content='html')
+        category_name='Category', markdown_content='markdown')
+    post_definition._html_content = 'html'
 
     post = storage.create_post(post_definition)
 
@@ -37,7 +37,8 @@ def test_update_post(storage):
     post_definition = Package(
         post_id=2, post_title='Title', post_slug='slug', summary='summary',
         published_date=date(2017, 3, 12), category_name='Category',
-        markdown_content='markdown', html_content='html')
+        markdown_content='markdown')
+    post_definition._html_content = 'html'
     post = models.Post(
         title='old', slug='old', summary='summary',
         published_date=date(2010, 1, 2),

@@ -65,6 +65,51 @@ markdown_parser = Markdown(
 )
 
 
+class ResourceHandler:
+    """Wrapper around external post resource for easy filesystem manipulation.
+    """
+    def __init__(self, content, path):
+        """
+        Args:
+            content (bytes): content of the resource file
+            path (pathlib.Path): relative path of the resource
+
+        Raises:
+            ValueError: if the resource path is not a relative path
+        """
+        self.content = content
+        if path.is_absolute():
+            raise ValueError("path {} must be relative".format(path))
+        self.path = path
+
+    def save(self, root_path):
+        """Write the resource in a given directory.
+
+        Args:
+            root_path (pathlib.Path): Where to save this resource
+
+        Raises:
+            FileNotFoundError: if the root_path does not exist
+            NotADirectoryError: if the root_path is not a directory
+            PackageException: if writing the file will get outside of
+                root_directory.
+        """
+        root_path.resolve()
+        if not root_path.is_dir():
+            raise NotADirectoryError(
+                "Root resource path {} is not a directory".format(root_path))
+
+        resource_path = (root_path / self.path)
+
+        if root_path not in resource_path.parents:
+            raise PackageException(
+                "resource path {} is not within given root directory {}".format(
+                    resource_path, root_path))
+
+        resource_path.parent.mkdir(mode=0o755, parents=True, exist_ok=True)
+        resource_path.write_bytes(self.content)
+
+
 def extract_package_meta(tar):
     """Reads and validate package metadata from tarfile.
 

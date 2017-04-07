@@ -1,5 +1,6 @@
 from datetime import date
 from io import BytesIO
+import pathlib
 import tarfile
 from unittest.mock import patch
 import yaml
@@ -229,3 +230,37 @@ def test_package_warns_if_no_meta_to_update():
     assert pack.update_post_meta(
         post_id={'foo': 12},
         post_slug='slug', published_date=date(2017, 3, 30)) is False
+
+
+def test_resource_hanlder_only_accepts_relative_path():
+    with pytest.raises(ValueError):
+        package.ResourceHandler(b'', pathlib.Path('/foo/bar'))
+
+
+def test_resource_handler_ensures_root_path_exists(temp_dir):
+    res_hdl = package.ResourceHandler(b'', pathlib.Path('blah'))
+
+    with pytest.raises(FileNotFoundError):
+        res_hdl.save(temp_dir / 'not-exiting')
+
+
+def test_resource_handle_ensure_root_path_is_dir(temp_dir):
+    (temp_dir / 'foo').write_bytes(b'foo')
+    res_hdl = package.ResourceHandler(b'', pathlib.Path('foo'))
+
+    with pytest.raises(NotADirectoryError):
+        res_hdl.save(temp_dir / 'foo')
+
+
+def test_resource_handler_writes_content(temp_dir):
+    content = b'some content'
+    res_path = pathlib.Path('foo/bar/content.dat')
+    res_hdl = package.ResourceHandler(content, res_path)
+
+    res_hdl.save(temp_dir)
+
+    abs_res_path = temp_dir / res_path
+
+    assert abs_res_path.exists(), "{} was not written".format(abs_res_path)
+    assert abs_res_path.is_file()
+    assert abs_res_path.read_bytes() == content

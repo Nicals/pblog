@@ -162,6 +162,7 @@ class PostListResource(Resource):
 
         post_package.set_default_values()
         post_package.build_html_content(md)
+        md.reset()
         post = storage.create_post(post_package)
 
         post_schema = PostSchema()
@@ -201,6 +202,7 @@ class PostResource(Resource):
 
         post_package.set_default_values()
         post_package.build_html_content(md)
+        md.reset()
         storage.update_post(post, post_package)
 
         post_schema = PostSchema()

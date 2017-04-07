@@ -106,8 +106,13 @@ class ResourceHandler:
                 "resource path {} is not within given root directory {}".format(
                     resource_path, root_path))
 
-        resource_path.parent.mkdir(mode=0o755, parents=True, exist_ok=True)
-        resource_path.write_bytes(self.content)
+        try:
+            resource_path.parent.mkdir(mode=0o755, parents=True)
+        except FileExistsError:
+            pass
+
+        with resource_path.open('wb') as f:
+            f.write(self.content)
 
 
 def extract_package_meta(tar):

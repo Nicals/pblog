@@ -245,7 +245,8 @@ def test_resource_handler_ensures_root_path_exists(temp_dir):
 
 
 def test_resource_handle_ensure_root_path_is_dir(temp_dir):
-    (temp_dir / 'foo').write_bytes(b'foo')
+    with (temp_dir / 'foo').open('wb') as f:
+        f.write(b'foo')
     res_hdl = package.ResourceHandler(b'', pathlib.Path('foo'))
 
     with pytest.raises(NotADirectoryError):
@@ -263,4 +264,5 @@ def test_resource_handler_writes_content(temp_dir):
 
     assert abs_res_path.exists(), "{} was not written".format(abs_res_path)
     assert abs_res_path.is_file()
-    assert abs_res_path.read_bytes() == content
+    with abs_res_path.open('rb') as f:
+        assert f.read() == content

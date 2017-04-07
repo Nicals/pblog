@@ -39,230 +39,223 @@ def build_tar_file(content_files):
     return tar_file
 
 
-def test_extracts_package_meta():
-    pack = build_tar_file([
-        ('package.yml', b"encoding: utf-8\npost: post.md\n")])
+class TestExtractPackage:
+    def test_extracts_package_meta(self):
+        pack = build_tar_file([
+            ('package.yml', b"encoding: utf-8\npost: post.md\n")])
 
-    with tarfile.open(fileobj=pack) as tar:
-        assert package.extract_package_meta(tar) == {
-            'encoding': 'utf-8',
-            'post': 'post.md',
+        with tarfile.open(fileobj=pack) as tar:
+            assert package.extract_package_meta(tar) == {
+                'encoding': 'utf-8',
+                'post': 'post.md',
+            }
+
+    def test_empty_package_meta_raise_error(self):
+        pack = build_tar_file([('package.yml', b"")])
+
+        with tarfile.open(fileobj=pack) as tar:
+            with pytest.raises(package.PackageException):
+                package.extract_package_meta(tar)
+
+    def test_wrong_yaml_package_meta_raise_error(self):
+        pack = build_tar_file([('package.yml', b"'")])
+
+        with tarfile.open(fileobj=pack) as tar:
+            with pytest.raises(package.PackageException):
+                package.extract_package_meta(tar)
+
+    def test_raise_exception_if_no_package_meta(self):
+        pack = build_tar_file([('not-package.yml', b"some content'")])
+
+        with tarfile.open(fileobj=pack) as tar:
+            with pytest.raises(package.PackageException):
+                package.extract_package_meta(tar)
+
+    def test_raise_exception_if_package_meta_do_not_validate(self):
+        pack = build_tar_file([('package.yml', b"foo: bar\n")])
+
+        with tarfile.open(fileobj=pack) as tar:
+            with pytest.raises(package.PackageValidationError) as excinfo:
+                package.extract_package_meta(tar)
+
+        assert 'encoding' in excinfo.value.errors
+        assert 'post' in excinfo.value.errors
+
+
+class TestPostMetaNormalization:
+    def test_normalizes(self):
+        meta = package.normalize_post_meta({'title': 'Title', 'category': 'Category'})
+
+        assert meta == {
+            'id': {},
+            'title': 'Title',
+            'slug': None,
+            'category': 'Category',
+            'published_date': None,
         }
 
-
-def test_empty_package_meta_raise_error():
-    pack = build_tar_file([('package.yml', b"")])
-
-    with tarfile.open(fileobj=pack) as tar:
-        with pytest.raises(package.PackageException):
-            package.extract_package_meta(tar)
-
-
-def test_wrong_yaml_package_meta_raise_error():
-    pack = build_tar_file([('package.yml', b"'")])
-
-    with tarfile.open(fileobj=pack) as tar:
-        with pytest.raises(package.PackageException):
-            package.extract_package_meta(tar)
-
-
-def test_raise_exception_if_no_package_meta():
-    pack = build_tar_file([('not-package.yml', b"some content'")])
-
-    with tarfile.open(fileobj=pack) as tar:
-        with pytest.raises(package.PackageException):
-            package.extract_package_meta(tar)
-
-
-def test_raise_exception_if_package_meta_do_not_validate():
-    pack = build_tar_file([('package.yml', b"foo: bar\n")])
-
-    with tarfile.open(fileobj=pack) as tar:
+    def test_validation(self):
         with pytest.raises(package.PackageValidationError) as excinfo:
-            package.extract_package_meta(tar)
+            package.normalize_post_meta({})
 
-    assert 'encoding' in excinfo.value.errors
-    assert 'post' in excinfo.value.errors
-
-
-def test_normalize_post_meta():
-    meta = package.normalize_post_meta({'title': 'Title', 'category': 'Category'})
-
-    assert meta == {
-        'id': {},
-        'title': 'Title',
-        'slug': None,
-        'category': 'Category',
-        'published_date': None,
-    }
+        assert 'title' in excinfo.value.errors
+        assert 'category' in excinfo.value.errors
 
 
-def test_normalize_post_meta_validation():
-    with pytest.raises(package.PackageValidationError) as excinfo:
-        package.normalize_post_meta({})
+class TestReadingPackage:
+    def test_read_package(self, temp_dir):
+        pack = build_tar_file([
+            ('package.yml', b"encoding: iso-8859-1\npost: post.md"),
+            ('post.md', SAMPLE_MARKDOWN.encode('iso-8859-1')),
+        ])
+        package_path = temp_dir / 'package.tar.gz'
+        with package_path.open('wb') as f:
+            f.write(pack.read())
 
-    assert 'title' in excinfo.value.errors
-    assert 'category' in excinfo.value.errors
+        package_info = package.read_package(package_path)
 
+        assert package_info.post_encoding == 'iso-8859-1'
+        assert package_info.post_id == {}
+        assert package_info.post_title == "This is a title"
+        assert package_info.post_slug is None
+        assert package_info.category_name == "A category"
+        assert package_info.published_date is None
+        assert package_info.summary == "Let's have a summary"
+        assert package_info.markdown_content == SAMPLE_MARKDOWN
 
-def test_read_package(temp_dir):
-    pack = build_tar_file([
-        ('package.yml', b"encoding: iso-8859-1\npost: post.md"),
-        ('post.md', SAMPLE_MARKDOWN.encode('iso-8859-1')),
-    ])
-    package_path = temp_dir / 'package.tar.gz'
-    with package_path.open('wb') as f:
-        f.write(pack.read())
+    def test_read_package_from_file(self):
+        package_file = build_tar_file([
+            ('package.yml', b"encoding: iso-8859-1\npost: post.md"),
+            ('post.md', SAMPLE_MARKDOWN.encode('iso-8859-1')),
+        ])
 
-    package_info = package.read_package(package_path)
+        package_info = package.read_package(package_file)
 
-    assert package_info.post_encoding == 'iso-8859-1'
-    assert package_info.post_id == {}
-    assert package_info.post_title == "This is a title"
-    assert package_info.post_slug is None
-    assert package_info.category_name == "A category"
-    assert package_info.published_date is None
-    assert package_info.summary == "Let's have a summary"
-    assert package_info.markdown_content == SAMPLE_MARKDOWN
-
-
-def test_read_package_from_file():
-    package_file = build_tar_file([
-        ('package.yml', b"encoding: iso-8859-1\npost: post.md"),
-        ('post.md', SAMPLE_MARKDOWN.encode('iso-8859-1')),
-    ])
-
-    package_info = package.read_package(package_file)
-
-    assert package_info.post_title == "This is a title"
+        assert package_info.post_title == "This is a title"
 
 
-def test_build_package(temp_dir):
-    post_path = temp_dir / "post.md"
-    package_file = BytesIO()
-    with post_path.open('w', encoding='iso-8859-1') as post_file:
-        post_file.write(SAMPLE_MARKDOWN)
+class TestBuildingPackage:
+    def test_build_package(self, temp_dir):
+        post_path = temp_dir / "post.md"
+        package_file = BytesIO()
+        with post_path.open('w', encoding='iso-8859-1') as post_file:
+            post_file.write(SAMPLE_MARKDOWN)
 
-    built_package = package.build_package(post_path, package_file, encoding='iso-8859-1')
-    package_file.seek(0)
+        built_package = package.build_package(post_path, package_file, encoding='iso-8859-1')
+        package_file.seek(0)
 
-    with tarfile.open(mode='r', fileobj=package_file) as tar:
-        meta_content = yaml.load(tar.extractfile('package.yml').read().decode())
-        assert meta_content == {'encoding': 'iso-8859-1', 'post': 'post.md'}
-        assert tar.extractfile('post.md').read().decode('iso-8859-1') == SAMPLE_MARKDOWN
+        with tarfile.open(mode='r', fileobj=package_file) as tar:
+            meta_content = yaml.load(tar.extractfile('package.yml').read().decode())
+            assert meta_content == {'encoding': 'iso-8859-1', 'post': 'post.md'}
+            assert tar.extractfile('post.md').read().decode('iso-8859-1') == SAMPLE_MARKDOWN
 
-    assert built_package.post_id == {}
-    assert built_package.post_title == "This is a title"
-    assert built_package.post_slug is None
-    assert built_package.published_date is None
-    assert built_package.category_name == "A category"
-    assert built_package.markdown_content == SAMPLE_MARKDOWN
+        assert built_package.post_id == {}
+        assert built_package.post_title == "This is a title"
+        assert built_package.post_slug is None
+        assert built_package.published_date is None
+        assert built_package.category_name == "A category"
+        assert built_package.markdown_content == SAMPLE_MARKDOWN
 
+    def test_build_package_writes_on_disc(self, temp_dir):
+        post_path = temp_dir / "post.md"
+        with post_path.open('w', encoding='utf-8') as post_file:
+            post_file.write(SAMPLE_MARKDOWN)
+        package_path = temp_dir / "package.tar.gz"
 
-def test_build_package_writes_on_disc(temp_dir):
-    post_path = temp_dir / "post.md"
-    with post_path.open('w', encoding='utf-8') as post_file:
-        post_file.write(SAMPLE_MARKDOWN)
-    package_path = temp_dir / "package.tar.gz"
+        package.build_package(post_path, package_path)
 
-    package.build_package(post_path, package_path)
+        assert package_path.is_file()
+        try:
+            with tarfile.open(str(package_path)):
+                pass
+        except tarfile.ReadError:
+            pytest.fail("built package is not a valid tar file")
 
-    assert package_path.is_file()
-    try:
-        with tarfile.open(str(package_path)):
-            pass
-    except tarfile.ReadError:
-        pytest.fail("built package is not a valid tar file")
-
-
-def test_invalid_post_meta_will_not_package(temp_dir):
-    post_path = temp_dir / "post.md"
-    with post_path.open('w') as f:
-        f.write("""---
+    def test_invalid_post_meta_will_not_package(self, temp_dir):
+        post_path = temp_dir / "post.md"
+        with post_path.open('w') as f:
+            f.write("""---
 foo: bar
 """)
 
-    with pytest.raises(package.PackageValidationError) as excinfo:
-        package.build_package(post_path, BytesIO())
+        with pytest.raises(package.PackageValidationError) as excinfo:
+            package.build_package(post_path, BytesIO())
 
-    assert 'title' in excinfo.value.errors
-    assert 'category' in excinfo.value.errors
-
-
-@patch('pblog.package.date')
-def test_package_sets_default_values(patch_date):
-    patch_date.today.return_value = date(2017, 3, 30)
-    pack = package.Package("A title", "A category", "Some markdown", "summary")
-
-    pack.set_default_values()
-
-    assert pack.post_slug == 'a-title'
-    assert patch_date.today.called
-    assert pack.published_date == date(2017, 3, 30)
+        assert 'title' in excinfo.value.errors
+        assert 'category' in excinfo.value.errors
 
 
-def test_package_update_post_meta():
-    pack = package.Package(
-        post_title="A title", category_name="A category",
-        markdown_content=SAMPLE_MARKDOWN, summary="Foo")
+class TestPackage:
+    @patch('pblog.package.date')
+    def test_package_sets_default_values(self, patch_date):
+        patch_date.today.return_value = date(2017, 3, 30)
+        pack = package.Package("A title", "A category", "Some markdown", "summary")
 
-    assert pack.update_post_meta(
-        post_slug='a-title',
-        published_date=date(2017, 3, 30),
-        post_id={'foo': 12}) is True
-    assert pack.post_slug == 'a-title'
-    assert pack.published_date == date(2017, 3, 30)
-    assert pack.post_id == {'foo': 12}
+        pack.set_default_values()
 
-    parser = package.markdown_parser
-    package.markdown_parser.convert(pack.markdown_content)
-    assert parser.meta['slug'] == 'a-title'
-    assert parser.meta['published_date'] == date(2017, 3, 30)
-    assert parser.meta['id'] == {'foo': 12}
+        assert pack.post_slug == 'a-title'
+        assert patch_date.today.called
+        assert pack.published_date == date(2017, 3, 30)
 
+    def test_package_update_post_meta(self):
+        pack = package.Package(
+            post_title="A title", category_name="A category",
+            markdown_content=SAMPLE_MARKDOWN, summary="Foo")
 
-def test_package_warns_if_no_meta_to_update():
-    pack = package.Package(
-        post_title="A title", category_name="A category",
-        markdown_content="", post_slug="slug", summary="Foo",
-        published_date=date(2017, 3, 30), post_id={'foo': 12})
+        assert pack.update_post_meta(
+            post_slug='a-title',
+            published_date=date(2017, 3, 30),
+            post_id={'foo': 12}) is True
+        assert pack.post_slug == 'a-title'
+        assert pack.published_date == date(2017, 3, 30)
+        assert pack.post_id == {'foo': 12}
 
-    assert pack.update_post_meta(
-        post_id={'foo': 12},
-        post_slug='slug', published_date=date(2017, 3, 30)) is False
+        parser = package.markdown_parser
+        package.markdown_parser.convert(pack.markdown_content)
+        assert parser.meta['slug'] == 'a-title'
+        assert parser.meta['published_date'] == date(2017, 3, 30)
+        assert parser.meta['id'] == {'foo': 12}
 
+    def test_package_warns_if_no_meta_to_update(self):
+        pack = package.Package(
+            post_title="A title", category_name="A category",
+            markdown_content="", post_slug="slug", summary="Foo",
+            published_date=date(2017, 3, 30), post_id={'foo': 12})
 
-def test_resource_hanlder_only_accepts_relative_path():
-    with pytest.raises(ValueError):
-        package.ResourceHandler(b'', pathlib.Path('/foo/bar'))
-
-
-def test_resource_handler_ensures_root_path_exists(temp_dir):
-    res_hdl = package.ResourceHandler(b'', pathlib.Path('blah'))
-
-    with pytest.raises(FileNotFoundError):
-        res_hdl.save(temp_dir / 'not-exiting')
-
-
-def test_resource_handle_ensure_root_path_is_dir(temp_dir):
-    with (temp_dir / 'foo').open('wb') as f:
-        f.write(b'foo')
-    res_hdl = package.ResourceHandler(b'', pathlib.Path('foo'))
-
-    with pytest.raises(NotADirectoryError):
-        res_hdl.save(temp_dir / 'foo')
+        assert pack.update_post_meta(
+            post_id={'foo': 12},
+            post_slug='slug', published_date=date(2017, 3, 30)) is False
 
 
-def test_resource_handler_writes_content(temp_dir):
-    content = b'some content'
-    res_path = pathlib.Path('foo/bar/content.dat')
-    res_hdl = package.ResourceHandler(content, res_path)
+class TestResourceHandler:
+    def test_only_accepts_relative_path(self):
+        with pytest.raises(ValueError):
+            package.ResourceHandler(b'', pathlib.Path('/foo/bar'))
 
-    res_hdl.save(temp_dir)
+    def test_ensures_root_path_exists(self, temp_dir):
+        res_hdl = package.ResourceHandler(b'', pathlib.Path('blah'))
 
-    abs_res_path = temp_dir / res_path
+        with pytest.raises(FileNotFoundError):
+            res_hdl.save(temp_dir / 'not-exiting')
 
-    assert abs_res_path.exists(), "{} was not written".format(abs_res_path)
-    assert abs_res_path.is_file()
-    with abs_res_path.open('rb') as f:
-        assert f.read() == content
+    def test_ensure_root_path_is_dir(self, temp_dir):
+        with (temp_dir / 'foo').open('wb') as f:
+            f.write(b'foo')
+        res_hdl = package.ResourceHandler(b'', pathlib.Path('foo'))
+
+        with pytest.raises(NotADirectoryError):
+            res_hdl.save(temp_dir / 'foo')
+
+    def test_writes_content(self, temp_dir):
+        content = b'some content'
+        res_path = pathlib.Path('foo/bar/content.dat')
+        res_hdl = package.ResourceHandler(content, res_path)
+
+        res_hdl.save(temp_dir)
+
+        abs_res_path = temp_dir / res_path
+
+        assert abs_res_path.exists(), "{} was not written".format(abs_res_path)
+        assert abs_res_path.is_file()
+        with abs_res_path.open('rb') as f:
+            assert f.read() == content

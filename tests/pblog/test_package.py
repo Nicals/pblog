@@ -300,7 +300,7 @@ class TestResourceHandler:
         res_hdl = package.ResourceHandler(b'', pathlib.Path('blah'))
 
         with pytest.raises(FileNotFoundError):
-            res_hdl.save(temp_dir / 'not-exiting')
+            res_hdl.save(temp_dir / 'not-existing')
 
     def test_ensure_no_root_path_escape(self, temp_dir):
         (temp_dir / 'ham').mkdir()

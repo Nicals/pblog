@@ -141,6 +141,9 @@ class ResourceHandler:
                 root_directory.
         """
         root_path.resolve()
+        # resolve is not strict by default on python 3.6
+        if not root_path.exists():
+            raise FileNotFoundError("Directory {} not found".format(root_path))
         if not root_path.is_dir():
             raise NotADirectoryError(
                 "Root resource path {} is not a directory".format(root_path))

@@ -37,6 +37,8 @@ from slugify import slugify
 __all__ = [
     'PackageException',
     'PackageValidationError',
+    'ResourcesNotFound',
+    'ResourceHandler',
     'read_package',
     'build_package',
     'Package',

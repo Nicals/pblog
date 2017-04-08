@@ -25,6 +25,7 @@ from datetime import date
 import os
 import pathlib
 import tarfile
+from urllib.parse import urljoin
 import yaml
 
 import cerberus
@@ -125,11 +126,13 @@ class ResourceHandler:
             raise ValueError("path {} must be relative".format(path))
         self.path = path
 
-    def save(self, root_path):
+    def save(self, root_path, directory=None):
         """Write the resource in a given directory.
 
         Args:
             root_path (pathlib.Path): Where to save this resource
+            directory (str): If not None, a specific directory will be
+                created to store this resource within the root path
 
         Raises:
             FileNotFoundError: if the root_path does not exist
@@ -142,7 +145,16 @@ class ResourceHandler:
             raise NotADirectoryError(
                 "Root resource path {} is not a directory".format(root_path))
 
-        resource_path = normalize_path(root_path / self.path)
+        if directory is not None:
+            root_dir_path = root_path / directory
+            if root_dir_path.parent != root_path:
+                raise PackageException(
+                    "directory {} leads outside of root path {}".format(
+                        root_path, directory))
+        else:
+            root_dir_path = root_path
+
+        resource_path = normalize_path(root_dir_path / self.path)
 
         if root_path not in resource_path.parents:
             raise PackageException(
@@ -441,13 +453,20 @@ class Package:
         self.resources = resources
         self._html_content = None
 
-    def build_html_content(self, parser):
+    def build_html_content(self, parser, resource_path):
         """Build internal HTML content from markdown content
 
         Args:
-            parser markdown(Markdown): The parser to use for markdown
+            parser markdown (markdown.Markdown): The parser to use for markdown
                 conversion.
+            resource_path (pathlib.Path): Path to the root resource path.
+                This is used to convert resources links within the generated
+                HTML post
         """
+        if self.post_slug is None:
+            raise ValueError('Post slug is None')
+        parser.treeprocessors['resource_path'].root_path = urljoin(
+            resource_path, self.post_slug) + '/'
         self._html_content = parser.convert(self.markdown_content)
 
     @property

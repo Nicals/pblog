@@ -137,3 +137,13 @@ class Storage:
             list of flask_pblgo.models.Post: Filtered posts
         """
         return self.session.query(Post).filter_by(category_id=category_id).all()
+
+    def save_resources(self, root_path, post_package):
+        """Save some resurces on disk
+
+        Args:
+            root_path: pathlib.Path: base path to store resources
+            post_package (pblog.package.Package):
+        """
+        for resource in post_package.resources:
+            resource.save(root_path, post_package.post_slug)

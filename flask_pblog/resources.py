@@ -151,6 +151,8 @@ class PostListResource(Resource):
         parser = build_edit_post_parser()
         storage = current_app.extensions['pblog'].storage
         md = current_app.extensions['pblog'].markdown
+        resource_path = current_app.extensions['pblog'].post_resource_path
+        resource_url = current_app.extensions['pblog'].post_resource_url
         args = parser.parse_args()
 
         try:
@@ -161,9 +163,10 @@ class PostListResource(Resource):
             return dict(errors={'__all__': [str(e)]})
 
         post_package.set_default_values()
-        post_package.build_html_content(md)
+        post_package.build_html_content(md, resource_url)
         md.reset()
         post = storage.create_post(post_package)
+        storage.save_resources(resource_path, post_package)
 
         post_schema = PostSchema()
         return post_schema.dump(post).data, 201
@@ -184,6 +187,8 @@ class PostResource(Resource):
         """
         storage = current_app.extensions['pblog'].storage
         md = current_app.extensions['pblog'].markdown
+        resource_path = current_app.extensions['pblog'].post_resource_path
+        resource_url = current_app.extensions['pblog'].post_resource_url
 
         try:
             post = storage.get_post(post_id)
@@ -201,9 +206,10 @@ class PostResource(Resource):
             return dict(errors={'__all__': [str(e)]})
 
         post_package.set_default_values()
-        post_package.build_html_content(md)
+        post_package.build_html_content(md, resource_url)
         md.reset()
         storage.update_post(post, post_package)
+        storage.save_resources(resource_path, post_package)
 
         post_schema = PostSchema()
         return post_schema.dump(post).data

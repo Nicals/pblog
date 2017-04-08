@@ -330,3 +330,13 @@ class TestResourceHandler:
         assert abs_res_path.is_file()
         with abs_res_path.open('rb') as f:
             assert f.read() == content
+
+    def test_creates_sub_directory(self, temp_dir):
+        res_hdl = package.ResourceHandler(PNG_HEADER, pathlib.Path('img.png'))
+
+        res_hdl.save(temp_dir, 'res')
+
+        assert (temp_dir / 'res').exists()
+        assert (temp_dir / 'res').is_dir()
+        with (temp_dir / 'res/img.png').open('rb') as f:
+            assert f.read() == PNG_HEADER

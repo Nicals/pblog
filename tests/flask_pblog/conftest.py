@@ -17,9 +17,11 @@ def app():
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = 'sqlite://'
+    app.config['PBLOG_RESOURCES_PATH'] = ''
+    app.config['PBLOG_RESOURCES_URL'] = ''
     app.config['TESTING'] = True
     db = SQLAlchemy(app)
-    markdown = Markdown()
+    markdown = Markdown(extensions=['markdown_extra.resource_path'])
     storage = Storage(db.session)
     PBlog(app, storage=storage, markdown=markdown)
 

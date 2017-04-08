@@ -22,6 +22,7 @@ Otherwise, they are simply ignored.
 
 from io import IOBase, BytesIO
 from datetime import date
+import os
 import pathlib
 import tarfile
 import yaml
@@ -43,6 +44,25 @@ __all__ = [
     'build_package',
     'Package',
 ]
+
+
+def normalize_path(path):
+    """Ensure that an absolute path is the direct one to a file
+    (no .. or other thinks).
+
+    Args:
+        path (pathlib.Path): the path to normalize
+
+    Raises:
+        ValueError: if the given path is not absolute
+
+    Returns:
+        pathlib.Path: normalized path
+    """
+    if not path.is_absolute():
+        raise ValueError('path {} is not absolute'.format(path))
+
+    return pathlib.Path(os.path.abspath(str(path)))
 
 
 class PackageException(Exception):
@@ -122,7 +142,7 @@ class ResourceHandler:
             raise NotADirectoryError(
                 "Root resource path {} is not a directory".format(root_path))
 
-        resource_path = (root_path / self.path)
+        resource_path = normalize_path(root_path / self.path)
 
         if root_path not in resource_path.parents:
             raise PackageException(

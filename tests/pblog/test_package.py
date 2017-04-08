@@ -40,6 +40,10 @@ def build_tar_file(content_files):
     return tar_file
 
 
+def test_normalize_path():
+    assert package.normalize_path(pathlib.Path('/foo/../bar')) == pathlib.Path('/bar')
+
+
 class TestExtractPackageMeta:
     def test_extracts_package_meta(self):
         pack = build_tar_file([
@@ -297,6 +301,13 @@ class TestResourceHandler:
 
         with pytest.raises(FileNotFoundError):
             res_hdl.save(temp_dir / 'not-exiting')
+
+    def test_ensure_no_root_path_escape(self, temp_dir):
+        (temp_dir / 'ham').mkdir()
+        res_hdl = package.ResourceHandler(PNG_HEADER, pathlib.Path('../spam'))
+
+        with pytest.raises(package.PackageException):
+            res_hdl.save(temp_dir / 'ham')
 
     def test_ensure_root_path_is_dir(self, temp_dir):
         with (temp_dir / 'foo').open('wb') as f:

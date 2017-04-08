@@ -25,7 +25,7 @@ and `markdown_extra.summary.SummaryExtension` enabled.
 
    import os
 
-   from flask import Flask
+   from flask import Flask, send_from_directory
    from flask_sqlalchemy import SQLAlchemy
    import flask_pblog
    from flask_pblog import PBlog
@@ -44,9 +44,15 @@ and `markdown_extra.summary.SummaryExtension` enabled.
    app.config['PBLOG_CONTRIBUTORS'] = {
        'admin': 'pbkdf2:.....',
    }
+   app.config['PBLOG_RESOURCES_PATH'] = '/srv/my-blog/resources/'
+   app.config['PBLOG_RESOURCES_URL'] = '/resources/'
    db = SQLAlchemy(app)
    md = Markdown(extensions=['markdown_extra.meta', 'markdown_extra.summary'])
    PBlog(app, storage=Storage(markdown=db.session, markdown=md)
+
+   @app.route('/resources/<path:path>')
+   def serve_post_resource(path):
+      return send_from_directory('resources', path)
 
    app.run()
 
@@ -56,6 +62,9 @@ This dictionary maps a username to a hashed passsword.
 PBlog is shipped with some default static files (only CSS).
 You can use your own static files or use the provided ones as shown in
 the example.
+
+There is no built-in support for post resources (images).
+You are responsible of providing your own mechanism for this.
 
 
 Using the command line

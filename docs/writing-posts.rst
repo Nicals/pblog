@@ -57,3 +57,44 @@ If the ``slug`` is not set in the metadata, it will be generated from the ``titl
 
 If the ``date`` metadata is not given, it will be automatically set as the
 current date when publishing the post.
+
+
+Local resources
+---------------
+
+In post, any image or link with a relative url will be associated with a file
+you must provide within the post directory.
+For example, considering the following post:
+
+.. code-block:: text
+
+   Have a look to this awesome kitten image:
+
+   ![A kitten](https://http.cat/200)
+
+   [a kitten stylesheet](/static/kitten.css)
+
+   ![A better kitten](a-kitten.jpg)
+
+   Find better kitten [here][files/kitten.tar.gz]
+
+Here, the first two links will be kept as it.
+They are considered external from from the post.
+
+The last two links are relative to the post path.
+Your file structure must be the following:
+
+.. code-block:: text
+
+   my-post.md
+   a-kitten.jpg
+   files/kitten.tar.gz
+
+When published, all this relative path will be fetched and sent to the blog
+server.
+
+They will be stored in a directory given by the `PBLOG_RESOURCES_PATH` settings
+and served from the `PBLOG_RESOURCE_URL` url.
+
+A directory named after the blog slug is created in the root resource path to
+store post resources.

@@ -12,6 +12,12 @@ This file provides general metadata about file structure:
    encoding: utf-8
    # path of the markdown file in the package
    post: post.md
+
+If some resources (images, archive file, ...) are shipped with the post, they
+will be stored in a "resources" directory at the root of the package path.
+Those resources must be references from within the markdown file in order to
+be extracted.
+Otherwise, they are simply ignored.
 """
 
 from io import IOBase, BytesIO
@@ -134,7 +140,7 @@ def extract_package_meta(tar):
     """Reads and validate package metadata from tarfile.
 
     Args:
-        tarfile.TarFile: opened package object
+        tar (tarfile.TarFile): opened package object
 
     Raises:
         pblog.package.PackageException: If the package.yml file is not
@@ -214,6 +220,37 @@ def normalize_post_meta(post_meta):
     return validator.normalized(post_meta)
 
 
+def extract_package_resources(tar, resource_paths):
+    """Extract given resources from a package
+
+    Args:
+        tar (tarfile.TarFile): the package
+        resource_paths (list of pathlib.Path): path of resources to extract
+
+    Raises:
+        pblog.package.ResourcesNotFound: if some resources did not exist
+            in the package
+
+    Returns:
+        list of pblog.package.ResourceHandler:
+    """
+    resources = []
+    not_found = []
+
+    for path in resource_paths:
+        try:
+            res_content = tar.extractfile(str('resources/' / path))
+        except KeyError:
+            not_found.append(str(path))
+
+        resources.append(ResourceHandler(res_content.read(), path))
+
+    if not_found:
+        raise ResourcesNotFound(not_found)
+
+    return resources
+
+
 def read_package(package_path):
     """
     Args:
@@ -221,6 +258,14 @@ def read_package(package_path):
             to read
         parser (markdown.Markdown): a markdown parser instance. If not
             given, a minimalistic parser will be used.
+
+    Raises:
+        UnicodeDecodeError: if the encoding of some file is not valid
+        pblog.package.PackageValidationError: is the format of the package
+            is not valid
+        pblog.package.ResourcesNotFound: is some markdown resources could
+            not be found in the package
+        pblog.package.PackageException: if any other error occured
 
     Returns:
         pblog.package.Package: An instance containing extracted post data.
@@ -243,6 +288,9 @@ def read_package(package_path):
         post_md_content = tar.extractfile(post_member).read().decode(post_encoding)
         markdown_parser.convert(post_md_content)
         post_meta = normalize_post_meta(markdown_parser.meta)
+        resources = extract_package_resources(
+            tar,
+            (pathlib.Path(e[0]) for e in markdown_parser.resource_path))
 
         package_info = Package(
             post_encoding=post_encoding,
@@ -253,6 +301,7 @@ def read_package(package_path):
             published_date=post_meta['published_date'],
             summary=markdown_parser.summary,
             markdown_content=post_md_content,
+            resources=resources,
         )
 
         return package_info

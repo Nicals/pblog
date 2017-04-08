@@ -21,6 +21,7 @@ Let's have a summary
 And at least a paragraph with special chars: éçà.
 """
 SAMPLE_HTML = "<p>And at least a paragraph with special chars: éçà.</p>"
+PNG_HEADER = b'\x89\x50\x4e\x47\x0d\x0a\x1a\x0a'
 
 
 def add_tar_member(tar, name, content):
@@ -39,7 +40,7 @@ def build_tar_file(content_files):
     return tar_file
 
 
-class TestExtractPackage:
+class TestExtractPackageMeta:
     def test_extracts_package_meta(self):
         pack = build_tar_file([
             ('package.yml', b"encoding: utf-8\npost: post.md\n")])
@@ -102,11 +103,44 @@ class TestPostMetaNormalization:
         assert 'category' in excinfo.value.errors
 
 
+class TestExtractPackageResource:
+    def test_resources_must_exist(self):
+        pack = build_tar_file([
+            ('resources/ham.png', PNG_HEADER),
+            ('resources/spam/egg.png', PNG_HEADER)
+        ])
+
+        with tarfile.open(fileobj=pack) as tar:
+            with pytest.raises(package.ResourcesNotFound) as excinfo:
+                package.extract_package_resources(
+                    tar, (pathlib.Path('ham.png'),
+                          pathlib.Path('spam.png'),
+                          pathlib.Path('spam/')))
+
+        assert excinfo.value.resources == ['spam.png', 'spam']
+
+    def test_resource_are_extracted(self):
+        pack = build_tar_file([
+            ('resources/imgs/ham.png', PNG_HEADER),
+        ])
+
+        with tarfile.open(fileobj=pack) as tar:
+            resources = package.extract_package_resources(
+                tar, (pathlib.Path('imgs/ham.png'),))
+
+        assert len(resources) == 1
+        resource = resources[0]
+        assert resource.content == PNG_HEADER
+        assert resource.path == pathlib.Path('imgs/ham.png')
+
+
 class TestReadingPackage:
     def test_read_package(self, temp_dir):
+        sample_markdown = SAMPLE_MARKDOWN + "![img](img.png)"
         pack = build_tar_file([
             ('package.yml', b"encoding: iso-8859-1\npost: post.md"),
-            ('post.md', SAMPLE_MARKDOWN.encode('iso-8859-1')),
+            ('post.md', sample_markdown.encode('iso-8859-1')),
+            ('resources/img.png', PNG_HEADER),
         ])
         package_path = temp_dir / 'package.tar.gz'
         with package_path.open('wb') as f:
@@ -121,7 +155,10 @@ class TestReadingPackage:
         assert package_info.category_name == "A category"
         assert package_info.published_date is None
         assert package_info.summary == "Let's have a summary"
-        assert package_info.markdown_content == SAMPLE_MARKDOWN
+        assert package_info.markdown_content == sample_markdown
+        assert len(package_info.resources) == 1
+        assert package_info.resources[0].path == pathlib.Path('img.png')
+        assert package_info.resources[0].content == PNG_HEADER
 
     def test_read_package_from_file(self):
         package_file = build_tar_file([

@@ -24,6 +24,7 @@ import cerberus
 from markdown import Markdown
 from markdown_extra.meta import MetaExtension, inject_meta
 from markdown_extra.summary import SummaryExtension
+from markdown_extra.resource_path import ResourcePathExtension
 from slugify import slugify
 
 
@@ -61,8 +62,22 @@ markdown_parser = Markdown(
     extensions=[
         MetaExtension(),
         SummaryExtension(),
+        ResourcePathExtension(),
     ],
 )
+
+
+class ResourcesNotFound(PackageException):
+    """This exception is raised whenever some resources files within a
+    package are not existing.
+
+    Attributes:
+        resources (list): list of resources that weren't found
+    """
+    def __init__(self, resources):
+        super().__init__("Some resources could not be found: {}".format(
+            ', '.join(resources)))
+        self.resources = resources
 
 
 class ResourceHandler:
@@ -243,6 +258,28 @@ def read_package(package_path):
         return package_info
 
 
+def get_resources(root_path, res_list):
+    not_found = []
+    resources = []
+
+    for res_path, _ in res_list:
+        try:
+            abs_res_path = (root_path / res_path).resolve()
+        except FileNotFoundError:
+            not_found.append(res_path)
+            continue
+
+        if not abs_res_path.is_file():
+            not_found.append(res_path)
+
+        resources.append((abs_res_path, pathlib.Path(res_path)))
+
+    if not_found:
+        raise ResourcesNotFound(not_found)
+
+    return resources
+
+
 def build_package(post_path, package_path, encoding='utf-8'):
     """Build a package for a post.
 
@@ -261,6 +298,8 @@ def build_package(post_path, package_path, encoding='utf-8'):
 
     post_meta = normalize_post_meta(markdown_parser.meta)
     package_meta = yaml.dump(dict(post=post_path.name, encoding=encoding)).encode()
+    resources = get_resources(post_path.parent, markdown_parser.resource_path)
+    package_resources = []
 
     tar_kwargs = dict(mode='w')
     if isinstance(package_path, pathlib.Path):
@@ -282,6 +321,13 @@ def build_package(post_path, package_path, encoding='utf-8'):
         # write post
         tar.add(str(post_path), arcname=post_path.name)
 
+        # write resources
+        for abs_res_path, res_path in resources:
+            tar.add(str(abs_res_path), str('resources' / res_path))
+            with abs_res_path.open('rb') as res_file:
+                package_resources.append(
+                    ResourceHandler(res_file.read(), res_path))
+
     return Package(
         post_title=post_meta['title'],
         category_name=post_meta['category'],
@@ -291,6 +337,7 @@ def build_package(post_path, package_path, encoding='utf-8'):
         post_id=post_meta['id'],
         post_slug=post_meta['slug'],
         published_date=post_meta['published_date'],
+        resources=package_resources,
     )
 
 
@@ -307,10 +354,11 @@ class Package:
         post_slug (string):
         published_date (date):
         html_content (string):
+        resources (list): list of ResourceHandler instance
     """
     def __init__(self, post_title, category_name, markdown_content,
                  summary, post_encoding='utf-8', post_id={}, post_slug=None,
-                 published_date=None):
+                 published_date=None, resources=[]):
         self.post_encoding = post_encoding
         self.post_id = post_id
         self.post_title = post_title
@@ -319,6 +367,7 @@ class Package:
         self.published_date = published_date
         self.summary = summary
         self.markdown_content = markdown_content
+        self.resources = resources
         self._html_content = None
 
     def build_html_content(self, parser):

@@ -138,8 +138,12 @@ class TestBuildingPackage:
     def test_build_package(self, temp_dir):
         post_path = temp_dir / "post.md"
         package_file = BytesIO()
+        sample_markdown = SAMPLE_MARKDOWN + "![img](imgs/img.png)"
         with post_path.open('w', encoding='iso-8859-1') as post_file:
-            post_file.write(SAMPLE_MARKDOWN)
+            post_file.write(sample_markdown)
+        (temp_dir / 'imgs').mkdir()
+        with (temp_dir / 'imgs/img.png').open('wb') as f:
+            f.write(b'img-content')
 
         built_package = package.build_package(post_path, package_file, encoding='iso-8859-1')
         package_file.seek(0)
@@ -147,14 +151,19 @@ class TestBuildingPackage:
         with tarfile.open(mode='r', fileobj=package_file) as tar:
             meta_content = yaml.load(tar.extractfile('package.yml').read().decode())
             assert meta_content == {'encoding': 'iso-8859-1', 'post': 'post.md'}
-            assert tar.extractfile('post.md').read().decode('iso-8859-1') == SAMPLE_MARKDOWN
+            assert tar.extractfile('post.md').read().decode('iso-8859-1') == sample_markdown
+            assert tar.extractfile('resources/imgs/img.png').read() == b'img-content'
 
         assert built_package.post_id == {}
         assert built_package.post_title == "This is a title"
         assert built_package.post_slug is None
         assert built_package.published_date is None
         assert built_package.category_name == "A category"
-        assert built_package.markdown_content == SAMPLE_MARKDOWN
+        assert built_package.markdown_content == sample_markdown
+        assert len(built_package.resources) == 1
+        resource = built_package.resources[0]
+        assert resource.content == b'img-content'
+        assert resource.path == pathlib.Path('imgs/img.png')
 
     def test_build_package_writes_on_disc(self, temp_dir):
         post_path = temp_dir / "post.md"
@@ -183,6 +192,20 @@ foo: bar
 
         assert 'title' in excinfo.value.errors
         assert 'category' in excinfo.value.errors
+
+    def test_ensures_resource_file_are_found(self, temp_dir):
+        with (temp_dir / 'image.png').open('w') as f:
+            f.write('some random content')
+        with (temp_dir / 'post.md').open('w') as f:
+            f.write(SAMPLE_MARKDOWN + """
+![unexisting-image](unexisting.png)
+![existing-image](image.png)
+""")
+
+        with pytest.raises(package.ResourcesNotFound) as excinfo:
+            package.build_package(temp_dir / 'post.md', temp_dir / 'post.tar.gz')
+
+        assert excinfo.value.resources == ['unexisting.png']
 
 
 class TestPackage:

@@ -103,7 +103,7 @@ class Client:
         response = self.session.post(
             '{}/posts'.format(self.api_root),
             files={
-                'post': (package_path.name, package_path.open(), 'application/tar+gzip'),
+                'post': (package_path.name, package_path.open('rb'), 'application/tar+gzip'),
             })
 
         return self.normalize_post(self._read_response(response, [201]))

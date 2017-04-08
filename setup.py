@@ -40,7 +40,7 @@ setup(
         'PyYAML==3.12',
         'Cerberus==1.1',
         'marshmallow==2.13.0',
-        'markdown-extra==0.2.0',
+        'markdown-extra==0.3.0',
         'python-slugify==1.2.1',
         'requests==2.13.0',
         'click==6.7',

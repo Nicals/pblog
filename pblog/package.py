@@ -384,7 +384,7 @@ def build_package(post_path, package_path, encoding='utf-8'):
     resources = get_resources(post_path.parent, markdown_parser.resource_path)
     package_resources = []
 
-    tar_kwargs = dict(mode='w')
+    tar_kwargs = dict(mode='w:gz')
     if isinstance(package_path, pathlib.Path):
         tar_kwargs['name'] = str(package_path)
     elif isinstance(package_path, IOBase):

@@ -109,7 +109,6 @@ def publish(ctx, post_path, encoding, password):
     if package.post_id.get(env.name) is None:
         result_post = client.create_post(package_path)
         click.echo('post %s successfully created' % result_post['id'])
-        package.post_id[env.name] = result_post['id']
     else:
         result_post = client.update_post(package.post_id[env.name], package_path)
         click.echo('post %s successfully updated' % result_post['id'])

@@ -95,6 +95,7 @@ Several environment can be configured independently.
    [pblog:testing]
    username = admin
    url = http://127.0.0.1:8000/blog/
+   wsgi = blog.app
 
 
 .. code-block:: console
@@ -106,6 +107,8 @@ See :doc:`writing-posts` to see how to write posts.
 
 The ``env`` option can be used to select the environment to load.
 The ``ini`` option sets the ``pblog.ini`` file to load.
+The ``wsgi`` option sets a local wsgi application that can be started in
+background by using the ``-a`` flag of the command line interface.
 
 
 .. command-output:: python -mpblog --help

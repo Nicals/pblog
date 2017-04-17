@@ -1,6 +1,9 @@
-from collections import namedtuple
 import configparser
+import importlib
+import logging
 import pathlib
+import threading
+import os
 
 import click
 
@@ -8,7 +11,49 @@ from pblog.client import AuthenticationError, Client
 from pblog.package import build_package, PackageException, PackageValidationError
 
 
-Environment = namedtuple('Environment', ('name', 'url', 'username'))
+class Environment:
+    def __init__(self, name, url, username, local_app_module=None):
+        """
+            name (str): name of the environment
+            url (str): url to the blog application
+            username (str): username to use to authenticate on the remote
+                blog
+            local_app (str): local app module if available
+        """
+        self.name = name
+        self.url = url
+        self.username = username
+        self.local_app = None
+        self.local_app_thread = None
+
+        if local_app_module is not None:
+            module_name, attr_name = local_app_module.rsplit('.', 1)
+            app_module = importlib.import_module(module_name)
+            self.local_app = getattr(app_module, attr_name)
+
+    def run_local_app(self):
+        if self.local_app is None:
+            raise ValueError("This environment has no local application")
+
+        # prevent werkzeug log
+        werkzeug_logger = logging.getLogger('werkzeug')
+        for handler in werkzeug_logger.handlers[:]:
+            werkzeug_logger.removeHandler(handler)
+
+        self.local_app_thread = threading.Thread(
+            target=self.local_app.run, kwargs={'debug': False})
+        self.local_app_thread.start()
+
+    def stop_local_app(self):
+        if self.local_app is None:
+            raise ValueError("This environment has no local application")
+
+        if self.local_app_thread is None:
+            raise ValueError("No thread has been started")
+
+        os.environ['werkzeug.server.shutdown']()
+        self.local_app_thread.join()
+        self.local_app_thread = None
 
 
 class EnvError(Exception):
@@ -48,14 +93,16 @@ def parse_env(env_file, env=None):
     return Environment(
         name=env,
         url=parser[env_section]['url'].rstrip('/'),
-        username=parser[env_section]['username'])
+        username=parser[env_section]['username'],
+        local_app_module=parser[env_section].get('wsgi'))
 
 
 @click.group()
 @click.option('-i', '--ini', default='pblog.ini', help='pblog.ini path')
 @click.option('-e', '--env', help='pblog environment')
+@click.option('-a', '--app', is_flag=True, help='run local app')
 @click.pass_context
-def cli(ctx, ini, env):
+def cli(ctx, ini, env, app=False):
     try:
         ini_path = pathlib.Path(ini).resolve()
     except FileNotFoundError:
@@ -65,12 +112,19 @@ def cli(ctx, ini, env):
 
     try:
         with ini_path.open() as ini_file:
-            ctx.obj['env'] = parse_env(ini_file, env=env)
+            env = parse_env(ini_file, env=env)
+            ctx.obj['env'] = env
     except KeyError as e:
         raise click.ClickException(
             "no value for {} in ini file".format(e.args[0]))
     except (EnvError, configparser.Error) as e:
         raise click.ClickException(str(e))
+
+    if app is True:
+        if env.local_app is None:
+            raise click.ClickException(
+                "No local application defined for environment '%s'" % env.name)
+        env.run_local_app()
 
 
 @cli.command()

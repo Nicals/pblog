@@ -39,7 +39,7 @@ Storage
 
    .. autofunction:: posts_list
 
-   .. autofunction:: list_posts_in_category
+   .. autofunction:: list_posts_in_topic
 
    .. autofunction:: show_post
 

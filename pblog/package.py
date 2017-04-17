@@ -239,7 +239,7 @@ def normalize_post_meta(post_meta):
             'default': None,
             'regex': '^[A-Za-z0-9_-]+$',
         },
-        'category': {
+        'topic': {
             'type': 'string',
             'required': True,
         },
@@ -334,7 +334,7 @@ def read_package(package_path):
             post_id=post_meta['id'],
             post_title=post_meta['title'],
             post_slug=post_meta['slug'],
-            category_name=post_meta['category'],
+            topic_name=post_meta['topic'],
             published_date=post_meta['published_date'],
             summary=markdown_parser.summary,
             markdown_content=post_md_content,
@@ -416,7 +416,7 @@ def build_package(post_path, package_path, encoding='utf-8'):
 
     return Package(
         post_title=post_meta['title'],
-        category_name=post_meta['category'],
+        topic_name=post_meta['topic'],
         markdown_content=markdown_content,
         summary=markdown_parser.summary,
         post_encoding=encoding,
@@ -432,7 +432,7 @@ class Package:
 
     Attributes:
         post_title (string):
-        category_name (string):
+        topic_name (string):
         markdown_content (string):
         summary (string):
         post_encoding (string): encoding of the markdown post
@@ -442,14 +442,14 @@ class Package:
         html_content (string):
         resources (list): list of ResourceHandler instance
     """
-    def __init__(self, post_title, category_name, markdown_content,
+    def __init__(self, post_title, topic_name, markdown_content,
                  summary, post_encoding='utf-8', post_id={}, post_slug=None,
                  published_date=None, resources=[]):
         self.post_encoding = post_encoding
         self.post_id = post_id
         self.post_title = post_title
         self.post_slug = post_slug
-        self.category_name = category_name
+        self.topic_name = topic_name
         self.published_date = published_date
         self.summary = summary
         self.markdown_content = markdown_content

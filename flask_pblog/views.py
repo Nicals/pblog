@@ -13,7 +13,7 @@ blueprint = Blueprint('blog', __name__, template_folder='templates')
 
 @blueprint.route('/')
 def posts_list():
-    """Show a list of all posts and categories.
+    """Show a list of all posts and topics.
 
     Displays the ``pblog/posts-list.html`` template with the following context:
         posts: a list of ``pblog.models.Post`` instances
@@ -21,21 +21,21 @@ def posts_list():
     """
     storage = current_app.extensions['pblog'].storage
     posts = storage.get_all_posts()
-    categories = storage.get_all_categories()
+    topics = storage.get_all_topics()
     return render_template(
         'pblog/posts-list.html',
         posts=posts,
-        categories=categories)
+        topics=topics)
 
 
-@blueprint.route('/category/<category_id>/<slug>')
-def list_posts_in_category(category_id, slug):
-    """Displays all posts in a given category.
+@blueprint.route('/topic/<topic_id>/<slug>')
+def list_posts_in_topic(topic_id, slug):
+    """Displays all posts in a given topic.
 
-    If the category does not exist or if no posts are associated with it, a
+    If the topic does not exist or if no posts are associated with it, a
     404 response will be returned.
 
-    If the category exists but the slug is not the one provided in the url,
+    If the topic exists but the slug is not the one provided in the url,
     a permanent redirection will be triggered to the correct url.
 
     Displays the ``pblog/post.html`` template with the following context:
@@ -43,28 +43,28 @@ def list_posts_in_category(category_id, slug):
         categories: a list of all ``pblog.models.Category`` that have posts linked to them.
 
     Args:
-        category_id (int): id of the Category to fetch post for
-        slug (string): slug of the category
+        topic_id (int): id of the Category to fetch post for
+        slug (string): slug of the topic
     """
     storage = current_app.extensions['pblog'].storage
 
     try:
-        category = storage.get_category(category_id)
+        topic = storage.get_topic(topic_id)
     except NoResultFound:
         abort(404)
 
-    if category.slug != slug:
+    if topic.slug != slug:
         return redirect(
-            url_for('blog.list_posts_in_category',
-                    category_id=category.id,
-                    slug=category.slug),
+            url_for('blog.list_posts_in_topic',
+                    topic_id=topic.id,
+                    slug=topic.slug),
             code=301)
-    posts = storage.get_posts_in_category(category_id)
+    posts = storage.get_posts_in_topic(topic_id)
 
     return render_template(
         'pblog/posts-list.html',
         posts=posts,
-        categories=storage.get_all_categories())
+        topics=storage.get_all_topics())
 
 
 @blueprint.route('/post/<post_id>/<slug>.md', defaults={'is_markdown': True})
@@ -89,7 +89,7 @@ def show_post(post_id, slug, is_markdown):
             post. If False, will display the HTML rendered version
     """
     storage = current_app.extensions['pblog'].storage
-    categories = storage.get_all_categories()
+    topics = storage.get_all_topics()
     try:
         post = storage.get_post(post_id)
     except NoResultFound:
@@ -106,7 +106,7 @@ def show_post(post_id, slug, is_markdown):
 
     if is_markdown:
         return Response(post.md_content, mimetype='text/plain')
-    return render_template('pblog/post.html', post=post, categories=categories)
+    return render_template('pblog/post.html', post=post, topics=topics)
 
 
 @blueprint.app_errorhandler(404)
@@ -116,5 +116,5 @@ def show_404(err):
     The template is ``pblog.404.html`` and have the following context:
         categories: a list of all ``pblog.models.Category`` that have posts linked to them.
     """
-    categories = current_app.extensions['pblog'].storage.get_all_categories()
-    return render_template('pblog/404.html', categories=categories), err.code
+    topics = current_app.extensions['pblog'].storage.get_all_topics()
+    return render_template('pblog/404.html', topics=topics), err.code

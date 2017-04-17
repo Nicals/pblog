@@ -10,7 +10,7 @@ def test_normalizes_post():
         'slug': 'a-slug',
         'title': 'A title',
         'published_date': '2017-03-16',
-        'category': {'name': 'Programming', 'id': 1},
+        'topic': {'name': 'Programming', 'id': 1},
         'id': 1})
 
     assert post == {
@@ -18,4 +18,4 @@ def test_normalizes_post():
         'title': 'A title',
         'slug': 'a-slug',
         'published_date': datetime.date(2017, 3, 16),
-        'category': {'name': 'Programming', 'id': 1}}
+        'topic': {'name': 'Programming', 'id': 1}}

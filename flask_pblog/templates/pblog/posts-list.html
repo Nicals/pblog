@@ -13,9 +13,9 @@
     </p>
     <div class="post-footer">
       <time pubdate="{{ post.published_date }}">{{ post.published_date.strftime("%B %d, %Y") }}</time>
-      <div class="meta-category">
-        <a href="{{ url_for("blog.list_posts_in_category", category_id=post.category.id, slug=post.category.slug) }}">
-          {{ post.category.name }}
+      <div class="meta-topic">
+        <a href="{{ url_for("blog.list_posts_in_topic", topic_id=post.topic.id, slug=post.topic.slug) }}">
+          {{ post.topic.name }}
         </a>
       </div>
     </div>

@@ -4,7 +4,7 @@
 from sqlalchemy.orm.exc import NoResultFound
 from slugify import slugify
 
-from flask_pblog.models import Category, Post
+from flask_pblog.models import Topic, Post
 
 
 class Storage:
@@ -18,22 +18,22 @@ class Storage:
         """
         self.session = session
 
-    def get_or_create_category(self, name):
-        """Try to retrieve a category by its name.
-        If it does not exist, a new category instance will be returned.
+    def get_or_create_topic(self, name):
+        """Try to retrieve a topic by its name.
+        If it does not exist, a new topic instance will be returned.
 
-        The new category will not be persisted in database if created.
+        The new topic will not be persisted in database if created.
 
         Args:
-            name (str): The name of the category to fetch.
+            name (str): The name of the topic to fetch.
 
         Returns:
-            flask_pblog.models.Category: The new category
+            flask_pblog.models.Topic: The new topic
         """
         try:
-            return self.session.query(Category).filter_by(name=name).one()
+            return self.session.query(Topic).filter_by(name=name).one()
         except NoResultFound:
-            return Category(name=name, slug=slugify(name))
+            return Topic(name=name, slug=slugify(name))
 
     def create_post(self, post_package):
         """Creates a new post from a markdown file and saves it in the database.
@@ -50,7 +50,7 @@ class Storage:
             slug=post_package.post_slug,
             published_date=post_package.published_date,
             summary=post_package.summary,
-            category=self.get_or_create_category(post_package.category_name),
+            topic=self.get_or_create_topic(post_package.topic_name),
             md_content=post_package.markdown_content,
             html_content=post_package.html_content)
 
@@ -66,15 +66,12 @@ class Storage:
             post (flask_pblog.models.Post): The post to update
             md_package (pblog.package.Package): Post package definition to
                 update post from.
-
-        Raises:
-            pblog.markdown.PostError: If any data fails to validate.
         """
         post.title = post_package.post_title
         post.slug = post_package.post_slug
         post.published_date = post_package.published_date
         post.summary = post_package.summary
-        post.category = self.get_or_create_category(post_package.category_name)
+        post.topic = self.get_or_create_topic(post_package.topic_name)
         post.md_content = post_package.markdown_content
         post.html_content = post_package.html_content
 
@@ -103,40 +100,40 @@ class Storage:
         """
         return self.session.query(Post).filter_by(id=post_id).one()
 
-    def get_category(self, category_id):
-        """Get a category by its id that have at least one associated post.
+    def get_topic(self, topic_id):
+        """Get a topic by its id that have at least one associated post.
 
         Args:
-            category_id: Unique identifier of the category to fetch
+            topic_id: Unique identifier of the topic to fetch
 
         Raises:
             sqlalchemy.orm.exc.NoResultFound: If no categories exists with
-                this id or if a category was found without any associated
+                this id or if a topic was found without any associated
                 posts.
 
         Returns:
-            flask_pblog.models.Category: The fetched category
+            flask_pblog.models.Topic: The fetched topic
         """
-        return self.session.query(Category).filter_by(id=category_id).join(Post).one()
+        return self.session.query(Topic).filter_by(id=topic_id).join(Post).one()
 
-    def get_all_categories(self):
-        """Returns all categories which have at least one associated post
+    def get_all_topics(self):
+        """Returns all topics which have at least one associated post
 
         Returns:
-            list of flask_pblog.models.Category:
+            list of flask_pblog.models.Topic:
         """
-        return self.session.query(Category).join(Post).all()
+        return self.session.query(Topic).join(Post).all()
 
-    def get_posts_in_category(self, category_id):
-        """Get all posts belonging to a given category.
+    def get_posts_in_topic(self, topic_id):
+        """Get all posts belonging to a given topic.
 
         Args:
-            category_id: Unique identifier of the category to filter by
+            topic_id: Unique identifier of the topic to filter by
 
         Returns:
             list of flask_pblgo.models.Post: Filtered posts
         """
-        return self.session.query(Post).filter_by(category_id=category_id).all()
+        return self.session.query(Post).filter_by(topic_id=topic_id).all()
 
     def save_resources(self, root_path, post_package):
         """Save some resurces on disk

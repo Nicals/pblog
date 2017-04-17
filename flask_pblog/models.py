@@ -7,8 +7,8 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 
-class Category(Base):
-    __tablename__ = 'categories'
+class Topic(Base):
+    __tablename__ = 'pblog_topics'
 
     id = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False, unique=True)
@@ -22,7 +22,7 @@ class Category(Base):
 
 
 class Post(Base):
-    __tablename__ = 'posts'
+    __tablename__ = 'pblog_posts'
 
     id = Column(Integer, primary_key=True)
     title = Column(String(255), nullable=False)
@@ -31,9 +31,9 @@ class Post(Base):
     published_date = Column(Date(), nullable=False)
     md_content = Column(Text(), nullable=False)
     html_content = Column(Text(), nullable=False)
-    category_id = Column(Integer, ForeignKey('categories.id'), nullable=False)
-    category = relationship(
-        'Category', backref=backref('posts', lazy='dynamic'))
+    topic_id = Column(Integer, ForeignKey('pblog_topics.id'), nullable=False)
+    topic = relationship(
+        'Topic', backref=backref('posts', lazy='dynamic'))
 
     def __repr__(self):
         return '<{} {}:{}>'.format(self.__class__.__name__, self.id, self.title)

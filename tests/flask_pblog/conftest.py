@@ -7,7 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from markdown import Markdown
 import pytest
 
-from flask_pblog.models import Base, Post, Category
+from flask_pblog.models import Base, Post, Topic
 from flask_pblog.storage import Storage
 from flask_pblog import PBlog
 
@@ -48,7 +48,7 @@ def post(storage):
         slug='a-post',
         summary='this is a post',
         published_date=date(2010, 1, 1),
-        category=Category(name='Category', slug='category'),
+        topic=Topic(name='Topic', slug='topic'),
         md_content='markdown', html_content='<h1>markdown</h1')
     storage.session.add(post)
     storage.session.commit()
@@ -71,7 +71,7 @@ def post_package():
         # post
         post_content = b'''---
 title: A title
-category: A category
+topic: A topic
 ---
 
 [summary]

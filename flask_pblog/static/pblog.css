@@ -98,7 +98,7 @@ article.post .post-header {
   text-align: center;
 }
 
-article.post .post-header .meta-category {
+article.post .post-header .meta-topic {
   padding-top: 12px;
 }
 
@@ -127,7 +127,7 @@ article.post-overview h2 a {
 }
 
 
-article.post-overview .meta-category {
+article.post-overview .meta-topic {
   display: inline-block;
   padding: 0px 34px;
 }
@@ -136,13 +136,13 @@ article.post-overview .meta-category {
 /*
  * Generic
  */
-.meta-category a {
+.meta-topic a {
   text-decoration: none;
   color: #bf404a;
 }
 
-.meta-category a:hover,
-.meta-category a:active {
+.meta-topic a:hover,
+.meta-topic a:active {
   color: #9f1e29;
   transition:color .2s;
 }

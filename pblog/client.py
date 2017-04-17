@@ -61,7 +61,7 @@ class Client:
             'id': {'type': 'integer'},
             'title': {'type': 'string'},
             'slug': {'type': 'string'},
-            'category': {'type': 'dict', 'schema': {
+            'topic': {'type': 'dict', 'schema': {
                 'id': {'type': 'integer'},
                 'name': {'type': 'string'},
             }},

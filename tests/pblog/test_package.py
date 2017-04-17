@@ -12,7 +12,7 @@ from pblog import package
 
 SAMPLE_MARKDOWN = """---
 title: This is a title
-category: A category
+topic: A topic
 ---
 
 [summary]
@@ -89,13 +89,13 @@ class TestExtractPackageMeta:
 
 class TestPostMetaNormalization:
     def test_normalizes(self):
-        meta = package.normalize_post_meta({'title': 'Title', 'category': 'Category'})
+        meta = package.normalize_post_meta({'title': 'Title', 'topic': 'Category'})
 
         assert meta == {
             'id': {},
             'title': 'Title',
             'slug': None,
-            'category': 'Category',
+            'topic': 'Category',
             'published_date': None,
         }
 
@@ -104,7 +104,7 @@ class TestPostMetaNormalization:
             package.normalize_post_meta({})
 
         assert 'title' in excinfo.value.errors
-        assert 'category' in excinfo.value.errors
+        assert 'topic' in excinfo.value.errors
 
 
 class TestExtractPackageResource:
@@ -156,7 +156,7 @@ class TestReadingPackage:
         assert package_info.post_id == {}
         assert package_info.post_title == "This is a title"
         assert package_info.post_slug is None
-        assert package_info.category_name == "A category"
+        assert package_info.topic_name == "A topic"
         assert package_info.published_date is None
         assert package_info.summary == "Let's have a summary"
         assert package_info.markdown_content == sample_markdown
@@ -199,7 +199,7 @@ class TestBuildingPackage:
         assert built_package.post_title == "This is a title"
         assert built_package.post_slug is None
         assert built_package.published_date is None
-        assert built_package.category_name == "A category"
+        assert built_package.topic_name == "A topic"
         assert built_package.markdown_content == sample_markdown
         assert len(built_package.resources) == 1
         resource = built_package.resources[0]
@@ -232,7 +232,7 @@ foo: bar
             package.build_package(post_path, BytesIO())
 
         assert 'title' in excinfo.value.errors
-        assert 'category' in excinfo.value.errors
+        assert 'topic' in excinfo.value.errors
 
     def test_ensures_resource_file_are_found(self, temp_dir):
         with (temp_dir / 'image.png').open('w') as f:
@@ -253,7 +253,7 @@ class TestPackage:
     @patch('pblog.package.date')
     def test_package_sets_default_values(self, patch_date):
         patch_date.today.return_value = date(2017, 3, 30)
-        pack = package.Package("A title", "A category", "Some markdown", "summary")
+        pack = package.Package("A title", "A topic", "Some markdown", "summary")
 
         pack.set_default_values()
 
@@ -263,7 +263,7 @@ class TestPackage:
 
     def test_package_update_post_meta(self):
         pack = package.Package(
-            post_title="A title", category_name="A category",
+            post_title="A title", topic_name="A topic",
             markdown_content=SAMPLE_MARKDOWN, summary="Foo")
 
         assert pack.update_post_meta(
@@ -282,7 +282,7 @@ class TestPackage:
 
     def test_package_warns_if_no_meta_to_update(self):
         pack = package.Package(
-            post_title="A title", category_name="A category",
+            post_title="A title", topic_name="A topic",
             markdown_content="", post_slug="slug", summary="Foo",
             published_date=date(2017, 3, 30), post_id={'foo': 12})
 

@@ -4,7 +4,7 @@
 from marshmallow import Schema, fields
 
 
-class CategorySchema(Schema):
+class TopicSchema(Schema):
     id = fields.Integer()
     name = fields.String()
 
@@ -13,5 +13,5 @@ class PostSchema(Schema):
     id = fields.Integer()
     title = fields.String()
     slug = fields.String()
-    category = fields.Nested(CategorySchema)
+    topic = fields.Nested(TopicSchema)
     published_date = fields.Date()

@@ -18,7 +18,7 @@
           {% for topic in topics %}
           <li>
             <a href="{{ url_for("blog.list_posts_in_topic", topic_id=topic.id, slug=topic.slug) }}">
-              {{ topic.name }}
+              {{ topic }}
             </a>
           </li>
           {% endfor %}

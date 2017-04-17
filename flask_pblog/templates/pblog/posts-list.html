@@ -6,7 +6,7 @@
   {% for post in posts %}
   <article class="post-overview">
     <div class="post-header">
-      <h2><a href="{{  url_for("blog.show_post", post_id=post.id, slug=post.slug) }}">{{ post.title }}</a></h2>
+      <h2><a href="{{  url_for("blog.show_post", post_id=post.id, slug=post.slug) }}">{{ post }}</a></h2>
     </div>
     <p class="post-summary">
       {{ post.summary }}
@@ -15,7 +15,7 @@
       <time pubdate="{{ post.published_date }}">{{ post.published_date.strftime("%B %d, %Y") }}</time>
       <div class="meta-topic">
         <a href="{{ url_for("blog.list_posts_in_topic", topic_id=post.topic.id, slug=post.topic.slug) }}">
-          {{ post.topic.name }}
+          {{ post.topic }}
         </a>
       </div>
     </div>

@@ -18,6 +18,8 @@ class AuthenticationError(ClientException):
 
 class UnexpectedResponse(ClientException):
     def __init__(self, expected_status, received_status):
+        self.expected_status = expected_status
+        self.received_status = received_status
         super().__init__("Expecing %s response, but got %s" % (
             expected_status, received_status))
 

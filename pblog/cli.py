@@ -7,7 +7,7 @@ import os
 
 import click
 
-from pblog.client import AuthenticationError, Client
+from pblog.client import AuthenticationError, Client, UnexpectedResponse
 from pblog.package import build_package, PackageException, PackageValidationError
 
 
@@ -146,6 +146,8 @@ def publish(ctx, post_path, encoding, password):
         client.authenticate(env.username, password)
     except AuthenticationError:
         raise click.ClickException("authentication failed")
+    except UnexpectedResponse as e:
+        raise click.ClickException("unexpected server response: %s" % e.received_status)
 
     # parse post and report errors if any
     package_path = post_path.parent / (post_path.stem + '.tar.gz')
@@ -160,12 +162,15 @@ def publish(ctx, post_path, encoding, password):
     except PackageException as e:
         raise click.ClickException(str(e))
 
-    if package.post_id.get(env.name) is None:
-        result_post = client.create_post(package_path)
-        click.echo('post %s successfully created' % result_post['id'])
-    else:
-        result_post = client.update_post(package.post_id[env.name], package_path)
-        click.echo('post %s successfully updated' % result_post['id'])
+    try:
+        if package.post_id.get(env.name) is None:
+            result_post = client.create_post(package_path)
+            click.echo('post %s successfully created' % result_post['id'])
+        else:
+            result_post = client.update_post(package.post_id[env.name], package_path)
+            click.echo('post %s successfully updated' % result_post['id'])
+    except UnexpectedResponse as e:
+        raise click.ClickException("unexpected server response: %s" % e.received_status)
 
     new_meta = dict(
         post_id={env.name: result_post['id']},

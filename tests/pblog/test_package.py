@@ -190,7 +190,7 @@ class TestBuildingPackage:
         package_file.seek(0)
 
         with tarfile.open(mode='r', fileobj=package_file) as tar:
-            meta_content = yaml.load(tar.extractfile('package.yml').read().decode())
+            meta_content = yaml.safe_load(tar.extractfile('package.yml').read().decode())
             assert meta_content == {'encoding': 'iso-8859-1', 'post': 'post.md'}
             assert tar.extractfile('post.md').read().decode('iso-8859-1') == sample_markdown
             assert tar.extractfile('resources/imgs/img.png').read() == b'img-content'

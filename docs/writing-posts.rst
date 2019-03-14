@@ -13,8 +13,8 @@ id             dict    a dctionary mapping environment names to actual post id i
 title          string  the title of this post. Required.
 slug           string  a slug to use for this post. It is not required to be a unique
                        value. Not required.
-category       string  name of the category for this post. If not already existing,
-                       a new category will be created in the web interface. Required.
+topic          string  name of the topic for this post. If not already existing,
+                       a new topic will be created in the web interface. Required.
 published_date date    yyyy-mm-dd. If not set, the current date will be set to
                        the current date.
 
@@ -37,7 +37,7 @@ For example:
        prod: 4
    title: My first blog post
    slug: my-first-blog-post
-   category: Blogging
+   topic: Blogging
    ---
 
    [Summary]

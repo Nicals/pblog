@@ -48,7 +48,7 @@ and `markdown_extra.summary.SummaryExtension` enabled.
    app.config['PBLOG_RESOURCES_URL'] = '/resources/'
    db = SQLAlchemy(app)
    md = Markdown(extensions=['markdown_extra.meta', 'markdown_extra.summary'])
-   PBlog(app, storage=Storage(markdown=db.session, markdown=md)
+   PBlog(app, storage=Storage(session=db.session), markdown=md)
 
    @app.route('/resources/<path:path>')
    def serve_post_resource(path):

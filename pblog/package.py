@@ -20,7 +20,7 @@ be extracted.
 Otherwise, they are simply ignored.
 """
 
-from io import IOBase, BytesIO
+from io import BytesIO
 from datetime import date
 import os
 import pathlib
@@ -310,12 +310,8 @@ def read_package(package_path):
     tar_kwargs = dict(mode='r')
     if isinstance(package_path, pathlib.Path):
         tar_kwargs['name'] = str(package_path)
-    elif isinstance(package_path, IOBase):
-        tar_kwargs['fileobj'] = package_path
     else:
-        raise ValueError(
-            "package_path should be pathlib.Path or file-object instance. "
-            "%s instead" % type(package_path))
+        tar_kwargs['fileobj'] = package_path
 
     with tarfile.open(**tar_kwargs) as tar:
         package_meta = extract_package_meta(tar)
@@ -390,12 +386,8 @@ def build_package(post_path, package_path, encoding='utf-8'):
     tar_kwargs = dict(mode='w:gz')
     if isinstance(package_path, pathlib.Path):
         tar_kwargs['name'] = str(package_path)
-    elif isinstance(package_path, IOBase):
-        tar_kwargs['fileobj'] = package_path
     else:
-        raise ValueError(
-            "package_path should be a pathlib.Path or file-object instance. "
-            "%s instead" % type(package_path))
+        tar_kwargs['fileobj'] = package_path
 
     with tarfile.open(**tar_kwargs) as tar:
         # write package metadata

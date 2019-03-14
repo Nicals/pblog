@@ -199,7 +199,7 @@ def extract_package_meta(tar):
         },
     })
     try:
-        meta = yaml.load(tar.extractfile('package.yml').read().decode())
+        meta = yaml.safe_load(tar.extractfile('package.yml').read().decode())
     except yaml.YAMLError:
         raise PackageException(
             "The package.yml file does not contain valid YAML")

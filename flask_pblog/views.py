@@ -3,6 +3,7 @@ from flask import Blueprint
 from flask import current_app
 from flask import redirect
 from flask import render_template
+from flask import send_from_directory
 from flask import url_for
 from flask import Response
 from sqlalchemy.orm.exc import NoResultFound
@@ -107,6 +108,12 @@ def show_post(post_id, slug, is_markdown):
     if is_markdown:
         return Response(post.md_content, mimetype='text/plain')
     return render_template('pblog/post.html', post=post, topics=topics)
+
+
+@blueprint.route('/resources/<path:path>')
+def serve_resource_file(path):
+    post_resource_path = current_app.extensions['pblog'].post_resource_path
+    return send_from_directory(post_resource_path, path)
 
 
 @blueprint.app_errorhandler(404)

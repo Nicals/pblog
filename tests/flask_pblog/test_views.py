@@ -1,4 +1,6 @@
 from contextlib import contextmanager
+import pathlib
+from unittest.mock import patch
 from urllib.parse import urlparse
 
 from flask import template_rendered
@@ -89,6 +91,19 @@ class TestShowPostsInTopic:
         response = client.get('/topic/1/foo')
 
         assert response.status_code == 404
+
+
+@patch('flask_pblog.views.send_from_directory', autospec=True)
+def test_serves_resource_file(patch_send_from_directory, app, client):
+    resource_path = pathlib.Path('/foo/bar/resources')
+    client.application.extensions['pblog'].post_resource_path = resource_path
+    patch_send_from_directory.return_value = b'file content'
+
+    response = client.get('/resources/some-file.txt')
+
+    assert response.status_code == 200
+    assert response.data == b'file content'
+    patch_send_from_directory.assert_called_once_with(resource_path, 'some-file.txt')
 
 
 class TestShow404:

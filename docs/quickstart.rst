@@ -26,7 +26,7 @@ The next step is to build a Flask application that will use the ``flask_blog`` e
    # file app.py
    from os import path
 
-   from flask import Flask, send_from_directory
+   from flask import Flask
    from flask_sqlalchemy import SQLAlchemy
    import flask_pblog
    from flask_pblog.storage import Storage
@@ -53,8 +53,6 @@ The next step is to build a Flask application that will use the ``flask_blog`` e
    }
    # where are stored posts related resources
    app.config['PBLOG_RESOURCES_PATH'] = resource_path
-   # how are they accessed
-   app.config['PBLOG_RESOURCES_URL'] = '/resources/'
 
    # we need a markdown instance to create or update posts
    md = Markdown(
@@ -73,11 +71,6 @@ The next step is to build a Flask application that will use the ``flask_blog`` e
    # create the SQLAlchemy extesions
    db = SQLAlchemy(app)
    flask_pblog.PBlog(app, storage=Storage(session=db.session), markdown=md)
-
-
-   @app.route('/resources/<path:path>')
-   def serve_post_resource(path):
-       return send_from_directory(resource_path, path)
 
 
    if __name__ == '__main__':

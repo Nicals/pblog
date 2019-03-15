@@ -38,14 +38,12 @@ class PBlog:
         self.markdown = markdown or self.markdown
         self.post_resource_path = pathlib.Path(
             app.config['PBLOG_RESOURCES_PATH'])
-        self.post_resource_url = app.config['PBLOG_RESOURCES_URL']
-        if not self.post_resource_url.endswith('/'):
-            self.post_resource_url = self.post_resource_url + '/'
         from flask_pblog.views import blueprint as blog_bp
         from flask_pblog.resources import blueprint as resource_bp
         blog_bp.template_folder = app.config.get('PBLOG_TEMPLATE_FOLDER', 'templates')
         app.register_blueprint(blog_bp)
         app.register_blueprint(resource_bp, url_prefix='/api')
+        self.post_resource_url = '/resources/'
 
         if not hasattr(app, 'extensions'):
             app.extensions = {}

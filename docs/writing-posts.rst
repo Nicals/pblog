@@ -93,8 +93,7 @@ Your file structure must be the following:
 When published, all this relative path will be fetched and sent to the blog
 server.
 
-They will be stored in a directory given by the `PBLOG_RESOURCES_PATH` settings
-and served from the `PBLOG_RESOURCE_URL` url.
+They will be stored in a directory given by the `PBLOG_RESOURCES_PATH` settings.
 
 A directory named after the blog slug is created in the root resource path to
 store post resources.

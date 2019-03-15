@@ -9,7 +9,7 @@ from flask import Response
 from sqlalchemy.orm.exc import NoResultFound
 
 
-blueprint = Blueprint('blog', __name__, template_folder='templates')
+blueprint = Blueprint('pblog', __name__, template_folder='templates')
 
 
 @blueprint.route('/')
@@ -56,7 +56,7 @@ def list_posts_in_topic(topic_id, slug):
 
     if topic.slug != slug:
         return redirect(
-            url_for('blog.list_posts_in_topic',
+            url_for('pblog.list_posts_in_topic',
                     topic_id=topic.id,
                     slug=topic.slug),
             code=301)
@@ -99,7 +99,7 @@ def show_post(post_id, slug, is_markdown):
     # if the slug don't match, permanently redirect to correct url
     if post.slug != slug:
         return redirect(
-            url_for('blog.show_post',
+            url_for('pblog.show_post',
                     post_id=post.id,
                     slug=post.slug,
                     is_markdown=is_markdown),

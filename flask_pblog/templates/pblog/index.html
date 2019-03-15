@@ -9,15 +9,15 @@
   </head>
   <body>
     <header class="page-header">
-      <a href="{{ url_for("blog.posts_list") }}" class="blog-title">P-Blog</a>
+      <a href="{{ url_for("pblog.posts_list") }}" class="blog-title">P-Blog</a>
 
       {% if topics %}
       <nav class="topic-nav">
         <ul>
-          <li><a href="{{ url_for("blog.posts_list") }}">All topics</a></li>
+          <li><a href="{{ url_for("pblog.posts_list") }}">All topics</a></li>
           {% for topic in topics %}
           <li>
-            <a href="{{ url_for("blog.list_posts_in_topic", topic_id=topic.id, slug=topic.slug) }}">
+            <a href="{{ url_for("pblog.list_posts_in_topic", topic_id=topic.id, slug=topic.slug) }}">
               {{ topic }}
             </a>
           </li>
